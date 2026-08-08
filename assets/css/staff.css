@@ -67,7 +67,7 @@
   font-weight: 600;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .staff-worker-row {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     row-gap: 0.4rem;
@@ -75,10 +75,31 @@
   .staff-worker-row-head {
     display: none;
   }
+  /* 2컬럼 모드에서 헤더행이 숨겨지므로 data-label 속성으로 필드명을 표시 */
+  .staff-worker-row > [data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.7rem;
+    color: var(--kjenc-gray-600);
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+  }
 }
 
 .staff-worker-group {
   margin-bottom: 0.2rem;
+}
+
+/* 근무자 행: select를 감싸는 wrapper div가 grid 셀 안에서 꽉 차도록 */
+.staff-worker-row > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.staff-worker-row > div > .staff-select {
+  width: 100%;
 }
 
 .staff-time-picker {
@@ -140,6 +161,7 @@
   display: flex;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .staff-lodging-group-head input[type="text"] {
@@ -190,6 +212,7 @@
   gap: 0.5rem;
   font-size: 0.82rem;
   margin-bottom: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .staff-meal-custom-row label {
@@ -200,7 +223,9 @@
 }
 
 .staff-meal-custom-row input[type="number"] {
-  width: 90px;
+  min-width: 70px;
+  width: auto;
+  flex: 1 1 70px;
   border: 1px solid #d1d5db;
   border-radius: 0.25rem;
   padding: 0.3rem 0.4rem;

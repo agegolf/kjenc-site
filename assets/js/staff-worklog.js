@@ -153,9 +153,9 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   }
 
-  function timePickerHtml(hourClass, minuteClass, defaultHour, defaultMinute) {
+  function timePickerHtml(hourClass, minuteClass, defaultHour, defaultMinute, label) {
     return `
-      <div class="staff-time-picker">
+      <div class="staff-time-picker"${label ? ` data-label="${label}"` : ''}>
         <select class="staff-select ${hourClass}">${hourOptions(defaultHour)}</select>
         <span>:</span>
         <select class="staff-select ${minuteClass}">${minuteOptions(defaultMinute)}</select>
@@ -197,26 +197,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const row = document.createElement("div");
     row.className = "staff-worker-row";
     row.innerHTML = `
-      <select class="staff-select w-worktype">
-        <option value="정규근무">정규근무</option>
-        <option value="이동만">이동만(합류/지원 이동)</option>
-      </select>
-      <select class="staff-select w-name">${nameOptions(saved.name || "")}</select>
-      ${timePickerHtml("w-start-h", "w-start-m", startH, startM)}
-      ${timePickerHtml("w-end-h", "w-end-m", endH, endM)}
-      <select class="staff-select w-travel">
-        <option value="자차">자차</option>
-        <option value="대중교통">대중교통</option>
-        <option value="회사차">회사차</option>
-      </select>
-      <select class="staff-select w-vehicle" disabled>${vehicleOptionsHtml}</select>
-      <select class="staff-select w-status">
-        <option value="정상">정상</option>
-        <option value="지각">지각</option>
-        <option value="조퇴">조퇴</option>
-        <option value="결근">결근</option>
-        <option value="휴가">휴가</option>
-      </select>
+      <div data-label="근무구분">
+        <select class="staff-select w-worktype">
+          <option value="정규근무">정규근무</option>
+          <option value="이동만">이동만(합류/지원 이동)</option>
+        </select>
+      </div>
+      <div data-label="이름">
+        <select class="staff-select w-name">${nameOptions(saved.name || "")}</select>
+      </div>
+      ${timePickerHtml("w-start-h", "w-start-m", startH, startM, "시작")}
+      ${timePickerHtml("w-end-h", "w-end-m", endH, endM, "종료")}
+      <div data-label="이동방법">
+        <select class="staff-select w-travel">
+          <option value="자차">자차</option>
+          <option value="대중교통">대중교통</option>
+          <option value="회사차">회사차</option>
+        </select>
+      </div>
+      <div data-label="사용차량">
+        <select class="staff-select w-vehicle" disabled>${vehicleOptionsHtml}</select>
+      </div>
+      <div data-label="근태">
+        <select class="staff-select w-status">
+          <option value="정상">정상</option>
+          <option value="지각">지각</option>
+          <option value="조퇴">조퇴</option>
+          <option value="결근">결근</option>
+          <option value="휴가">휴가</option>
+        </select>
+      </div>
       <button type="button" class="staff-remove-btn">삭제</button>
     `;
     if (saved.workType) row.querySelector(".w-worktype").value = saved.workType;
