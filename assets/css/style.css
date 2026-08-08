@@ -28,6 +28,7 @@ body {
 .nav-link {
   color: var(--kjenc-gray-600);
   transition: color 0.15s ease;
+  white-space: nowrap;
 }
 
 .nav-link:hover,
