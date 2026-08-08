@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>영수증 승인 | KJENC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/staff.css">
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body class="bg-white text-[color:var(--kjenc-navy-900)]">
+<header class="staff-header">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="index.html" class="font-semibold hover:underline">&larr; KJENC 직원 페이지</a>
+    <div class="text-sm flex items-center gap-3">
+      <span><span id="session-name"></span>님</span>
+      <button onclick="staffLogout()" class="text-gray-300 underline">로그아웃</button>
+    </div>
+  </div>
+</header>
+
+<div class="staff-shell">
+  <h1 class="text-xl font-bold mb-1">영수증 승인</h1>
+  <p class="text-sm text-gray-500 mb-6">대기중인 영수증을 확인하고 승인/반려합니다. (관리자 전용)</p>
+
+  <p id="admin-msg" class="staff-msg hidden"></p>
+  <p id="admin-empty" class="text-sm text-gray-400 hidden">대기중인 영수증이 없습니다.</p>
+  <div id="admin-list" class="space-y-4"></div>
+</div>
+
+<template id="receipt-item-template">
+  <div class="staff-card receipt-item">
+    <div class="grid sm:grid-cols-2 gap-2 mb-3 text-sm">
+      <div><span class="text-gray-400">이름</span> <span class="r-name font-semibold"></span></div>
+      <div><span class="text-gray-400">날짜</span> <span class="r-date"></span></div>
+      <div><span class="text-gray-400">항목분류</span> <span class="r-category"></span></div>
+      <div><span class="text-gray-400">금액</span> <span class="r-amount font-semibold"></span>원</div>
+      <div class="sm:col-span-2"><span class="text-gray-400">메모</span> <span class="r-memo"></span></div>
+      <div class="sm:col-span-2"><span class="text-gray-400">등록일시</span> <span class="r-registered"></span></div>
+    </div>
+    <a href="#" target="_blank" rel="noopener" class="r-photo text-sm text-blue-600 underline hidden">영수증 사진 보기</a>
+    <div class="flex gap-2 mt-3">
+      <button type="button" class="btn-cta r-approve px-4 py-2 rounded font-semibold">승인</button>
+      <button type="button" class="r-reject px-4 py-2 rounded font-semibold border border-gray-300">반려</button>
+    </div>
+  </div>
+</template>
+
+<script src="../assets/js/staff-config.js"></script>
+<script src="../assets/js/staff-admin.js"></script>
+</body>
+</html>

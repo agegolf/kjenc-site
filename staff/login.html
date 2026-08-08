@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>직원 로그인 | KJENC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/staff.css">
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body class="bg-white text-[color:var(--kjenc-navy-900)]">
+<header class="staff-header">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="../index.html" class="text-sm text-gray-300">&larr; 홈페이지로</a>
+    <span class="font-semibold">KJENC 직원 페이지</span>
+    <span></span>
+  </div>
+</header>
+
+<div class="staff-shell">
+  <div class="staff-card">
+    <h1 class="text-xl font-bold mb-1">직원 로그인</h1>
+    <p class="text-sm text-gray-500 mb-6">이름과 개인 PIN 코드를 입력해주세요.</p>
+
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label class="staff-label">이름</label>
+        <input list="employee-list" id="f-name" class="staff-input" placeholder="이름을 입력하세요" autocomplete="off">
+        <datalist id="employee-list"></datalist>
+      </div>
+      <div>
+        <label class="staff-label">PIN 코드</label>
+        <input type="password" id="f-pin" class="staff-input" placeholder="4자리 PIN" inputmode="numeric" maxlength="8">
+      </div>
+      <p id="login-error" class="staff-msg staff-msg-error hidden"></p>
+      <button type="submit" class="btn-cta w-full py-3 rounded font-semibold">로그인</button>
+    </form>
+
+    <p class="text-xs text-gray-400 mt-6">PIN을 모르시면 사무실(관리자)에 문의해주세요.</p>
+
+    <a href="../index.html" class="staff-hub-link block mt-4 text-center">
+      <p class="font-semibold">홈페이지로 이동</p>
+    </a>
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const dl = document.getElementById("employee-list");
+    STAFF_KNOWN_NAMES.forEach((n) => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      dl.appendChild(opt);
+    });
+  });
+</script>
+
+<script src="../assets/js/staff-config.js"></script>
+<script src="../assets/js/staff-login.js"></script>
+</body>
+</html>

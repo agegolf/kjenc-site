@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>영수증 업로드 | KJENC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/staff.css">
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body class="bg-white text-[color:var(--kjenc-navy-900)]">
+<header class="staff-header">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="index.html" class="font-semibold hover:underline">&larr; KJENC 직원 페이지</a>
+    <div class="text-sm flex items-center gap-3">
+      <span><span id="session-name"></span>님</span>
+      <button onclick="staffLogout()" class="text-gray-300 underline">로그아웃</button>
+    </div>
+  </div>
+</header>
+
+<div class="staff-shell">
+  <h1 class="text-xl font-bold mb-1">영수증 업로드</h1>
+  <p class="text-sm text-gray-500 mb-6">본인 영수증을 직접 등록해주세요. (식비·유류비·정비·통행료·기타 — 세무 제출용으로 활용됩니다)</p>
+
+  <form id="receipt-form" class="staff-card space-y-5">
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="staff-label">날짜</label>
+        <input type="date" id="f-date" class="staff-input">
+      </div>
+      <div>
+        <label class="staff-label">현장명</label>
+        <input type="text" id="f-site" class="staff-input" placeholder="예: GM창원">
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="staff-label">항목분류</label>
+        <select id="f-category" class="staff-select">
+          <option value="식비">식비</option>
+          <option value="유류비">유류비</option>
+          <option value="정비">정비</option>
+          <option value="통행료">통행료</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div>
+        <label class="staff-label">결제수단</label>
+        <select id="f-payment" class="staff-select" required>
+          <option value="">선택해주세요</option>
+          <option value="회사카드">회사카드</option>
+          <option value="직원카드">직원카드</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="staff-label">금액 (원, 합계)</label>
+      <input type="number" id="f-amount" class="staff-input" placeholder="예: 13000">
+    </div>
+
+    <div id="vehicle-field" class="hidden">
+      <label class="staff-label">차량번호 (선택)</label>
+      <select id="f-vehicle" class="staff-select"></select>
+      <p class="text-xs text-gray-400 mt-1">유류비·정비 지출인 경우에만 선택해주세요.</p>
+    </div>
+
+    <div>
+      <label class="staff-label">영수증 사진</label>
+      <input type="file" id="f-photo" accept="image/*" capture="environment" class="staff-input">
+      <p class="text-xs text-gray-400 mt-1">세무 처리는 이 사진을 기준으로 세무사가 별도로 진행합니다 — 원본이 잘 보이게 찍어주세요.</p>
+    </div>
+
+    <div>
+      <label class="staff-label">메모 (선택)</label>
+      <input type="text" id="f-memo" class="staff-input" placeholder="예: 안산현장 중식">
+    </div>
+
+    <p id="receipt-msg" class="staff-msg hidden"></p>
+    <button type="submit" class="btn-cta w-full py-3 rounded font-semibold">영수증 등록</button>
+  </form>
+</div>
+
+<script src="../assets/js/staff-config.js"></script>
+<script src="../assets/js/staff-receipts.js"></script>
+</body>
+</html>

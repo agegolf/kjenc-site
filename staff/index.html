@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>직원 페이지 | KJENC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/staff.css">
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body class="bg-white text-[color:var(--kjenc-navy-900)]">
+<header class="staff-header">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="index.html" class="font-semibold">KJENC 직원 페이지</a>
+    <div class="text-sm flex items-center gap-3">
+      <span><span id="session-name"></span>님</span>
+      <button onclick="staffLogout()" class="text-gray-300 underline">로그아웃</button>
+    </div>
+  </div>
+</header>
+
+<div class="staff-shell">
+  <h1 class="text-xl font-bold mb-1">안녕하세요, <span id="session-name-title"></span>님</h1>
+  <p class="text-sm text-gray-500 mb-6">오늘도 안전한 하루 되세요.</p>
+
+  <a href="worklog.html" class="staff-hub-link">
+    <p class="font-semibold mb-1">업무일지 입력</p>
+    <p class="text-sm text-gray-500">현장 담당자용 — 오늘 현장·인원·근태를 입력합니다.</p>
+  </a>
+
+  <a href="receipts.html" class="staff-hub-link">
+    <p class="font-semibold mb-1">영수증 업로드</p>
+    <p class="text-sm text-gray-500">개인용 — 식비·유류비·정비·통행료 등 영수증을 등록합니다.</p>
+  </a>
+
+  <a href="admin.html" id="admin-link" class="staff-hub-link hidden">
+    <p class="font-semibold mb-1">영수증 승인 (관리자)</p>
+    <p class="text-sm text-gray-500">대기중인 영수증을 확인하고 승인/반려합니다.</p>
+  </a>
+
+  <a href="https://docs.google.com/spreadsheets/d/1Axa9PTqSl4DBH4uXhw_3rlmACLfMC0VibL7umPCECDA/edit" target="_blank" rel="noopener" id="sheet-link" class="staff-hub-link hidden">
+    <p class="font-semibold mb-1">업무일지 시트 (관리자)</p>
+    <p class="text-sm text-gray-500">구글 스프레드시트에서 전체 데이터를 확인합니다. (새 탭에서 열림)</p>
+  </a>
+
+  <a href="../index.html" class="staff-hub-link">
+    <p class="font-semibold mb-1">홈페이지로 이동</p>
+    <p class="text-sm text-gray-500">KJENC 홈페이지로 돌아갑니다.</p>
+  </a>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const session = staffRequireLogin();
+    if (session) {
+      document.getElementById("session-name").textContent = session.name;
+      document.getElementById("session-name-title").textContent = session.name;
+      if (session.isAdmin) {
+        document.getElementById("admin-link").classList.remove("hidden");
+        document.getElementById("sheet-link").classList.remove("hidden");
+      }
+    }
+  });
+</script>
+
+<script src="../assets/js/staff-config.js"></script>
+</body>
+</html>

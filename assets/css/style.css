@@ -1,0 +1,90 @@
+:root {
+  --kjenc-navy-900: #0f1b2d;
+  --kjenc-navy-800: #16273f;
+  --kjenc-navy-700: #1f3555;
+  --kjenc-navy-600: #2c4a75;
+  --kjenc-gray-100: #f4f5f7;
+  --kjenc-gray-200: #e5e7eb;
+  --kjenc-gray-400: #9ca3af;
+  --kjenc-gray-600: #4b5563;
+  --kjenc-accent: #c9962c;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Pretendard", "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--kjenc-navy-900);
+}
+
+.header-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.nav-link {
+  color: var(--kjenc-gray-600);
+  transition: color 0.15s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--kjenc-navy-700);
+  font-weight: 600;
+}
+
+.btn-cta {
+  background-color: var(--kjenc-accent);
+  color: #fff;
+  transition: opacity 0.15s ease;
+}
+
+.btn-cta:hover {
+  opacity: 0.9;
+}
+
+.placeholder-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--kjenc-gray-200);
+  color: var(--kjenc-gray-600);
+  border: 1px dashed var(--kjenc-gray-400);
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.tag-filter {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tag-filter.active {
+  background-color: var(--kjenc-navy-700);
+  color: #fff;
+}
+
+.project-card.hidden-by-filter {
+  display: none;
+}
+
+.field-error {
+  color: #b91c1c;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: none;
+}
+
+.field-invalid .field-error {
+  display: block;
+}
+
+.field-invalid input,
+.field-invalid select,
+.field-invalid textarea {
+  border-color: #b91c1c;
+}

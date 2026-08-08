@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>업무일지 입력 | KJENC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/staff.css">
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body class="bg-white text-[color:var(--kjenc-navy-900)]">
+<header class="staff-header">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="index.html" class="font-semibold hover:underline">&larr; KJENC 직원 페이지</a>
+    <div class="text-sm flex items-center gap-3">
+      <span><span id="session-name"></span>님</span>
+      <button onclick="staffLogout()" class="text-gray-300 underline">로그아웃</button>
+    </div>
+  </div>
+</header>
+
+<div class="staff-shell">
+  <h1 class="text-xl font-bold mb-1">업무일지 입력</h1>
+  <p class="text-sm text-gray-500 mb-6">오늘 우리 현장의 작업내용과 근무 인원을 입력해주세요.</p>
+
+  <form id="worklog-form" class="staff-card space-y-5">
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="staff-label">날짜</label>
+        <input type="date" id="f-date" class="staff-input">
+      </div>
+      <div>
+        <label class="staff-label">구분</label>
+        <select id="f-site-type" class="staff-select">
+          <option value="자사 현장">자사 현장</option>
+          <option value="타사 지원">타사 지원</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="staff-label">현장명</label>
+        <input type="text" id="f-site" class="staff-input" placeholder="예: 안산현장">
+      </div>
+      <div>
+        <label class="staff-label">거래처 (필수)</label>
+        <input type="text" id="f-client" class="staff-input" placeholder="예: 미래이앤시" required>
+      </div>
+    </div>
+
+    <div id="existing-worklog-card" class="staff-msg hidden"></div>
+
+    <div>
+      <label class="staff-label">금일 작업내용</label>
+      <textarea id="f-content" class="staff-textarea" rows="4" placeholder="예: M/H#2~#1 3상 포설완료"></textarea>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <label class="staff-label" style="margin-bottom:0;">근무 인원</label>
+        <button type="button" id="add-worker-btn" class="staff-add-btn">+ 인원 추가</button>
+      </div>
+      <div class="staff-worker-row staff-worker-row-head">
+        <span>근무구분</span><span>이름</span><span>시작</span><span>종료</span><span>이동방법</span><span>사용차량</span><span>근태</span><span></span>
+      </div>
+      <div id="worker-rows"></div>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <label class="staff-label" style="margin-bottom:0;">차량 이동 (있는 경우만)</label>
+        <button type="button" id="add-vehiclelog-btn" class="staff-add-btn">+ 차량 이동 추가</button>
+      </div>
+      <p class="text-xs text-gray-400 mb-2">오늘 사용한 차량이 어느 현장에서 어느 현장으로 이동했는지 기록해주세요. (예: 7265번 화물차, 마도창고 → 붑현덕현장, 09:00 → 10:30)</p>
+      <div id="vehicle-logs"></div>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <label class="staff-label" style="margin-bottom:0;">숙박 정보 (있는 경우만)</label>
+        <button type="button" id="add-lodging-btn" class="staff-add-btn">+ 숙박그룹 추가</button>
+      </div>
+      <p class="text-xs text-gray-400 mb-2">같은 방에 묵는 사람들을 묶어서 실제 결제금액을 입력하면, 인원수로 나눠서 1인당 실사용 금액이 자동 계산됩니다. 이 금액이 그대로 월말에 개인별 숙박지원금으로 합산됩니다. (예: 준특실 2인 50,000원 → 1인당 25,000원)</p>
+      <div id="lodging-groups"></div>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <label class="staff-label" style="margin-bottom:0;">식사 정보 (있는 경우만)</label>
+        <button type="button" id="add-meal-btn" class="staff-add-btn">+ 식사그룹 추가</button>
+      </div>
+      <p class="text-xs text-gray-400 mb-2">참가자별로 실제 결제한 금액을 각자 입력해주세요(기본: 개별입력). 이 금액이 그대로 월말에 개인별 식대지출로 합산됩니다(정액 지급이 아닌 실지출 정산). 한 명이 대표로 결제하고 인원수로 나눠도 된다면 "균등분배"를 선택해주세요.</p>
+      <div id="meal-groups"></div>
+    </div>
+
+    <p id="worklog-msg" class="staff-msg hidden"></p>
+    <button type="submit" class="btn-cta w-full py-3 rounded font-semibold">업무일지 저장</button>
+  </form>
+</div>
+
+<script src="../assets/js/staff-config.js"></script>
+<script src="../assets/js/staff-worklog.js"></script>
+</body>
+</html>

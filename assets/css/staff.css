@@ -1,0 +1,306 @@
+/* KJENC 직원 페이지 전용 스타일 (style.css의 --kjenc-* 변수를 함께 사용) */
+
+.staff-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: var(--kjenc-navy-900);
+  color: #fff;
+}
+
+.staff-shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+.staff-card {
+  background: #fff;
+  border: 1px solid var(--kjenc-gray-200);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.staff-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--kjenc-gray-600);
+  margin-bottom: 0.25rem;
+}
+
+.staff-input,
+.staff-select,
+.staff-textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+.staff-input:focus,
+.staff-select:focus,
+.staff-textarea:focus {
+  outline: none;
+  border-color: var(--kjenc-navy-600);
+}
+
+.staff-worker-row {
+  display: grid;
+  /* 각 트랙에 minmax(0, ...)를 줘야 시작/종료의 시(hour)+분(minute) 두 개 select가
+     좁은 칸에서 서로 다음 칸으로 밀려나오며 겹쳐 보이는 문제(2026-07-22 사용자 리포트)가
+     생기지 않는다. 시작/종료는 select 2개+콜론이 들어가므로 다른 칸보다 넓게 배정.
+     I-012(2026-08-05): "사용차량" 트랙 추가로 8개 컬럼이 됨. */
+  grid-template-columns:
+    minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1.15fr)
+    minmax(0, 0.85fr) minmax(0, 0.9fr) minmax(0, 0.8fr) minmax(0, 0.4fr);
+  gap: 0.4rem;
+  align-items: center;
+  border-bottom: 1px solid var(--kjenc-gray-200);
+  padding: 0.6rem 0;
+}
+
+.staff-worker-row-head {
+  font-size: 0.75rem;
+  color: var(--kjenc-gray-600);
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .staff-worker-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    row-gap: 0.4rem;
+  }
+  .staff-worker-row-head {
+    display: none;
+  }
+}
+
+.staff-worker-group {
+  margin-bottom: 0.2rem;
+}
+
+.staff-time-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.staff-time-picker .staff-select {
+  width: auto;
+  min-width: 2.2em;
+  flex: 1 1 auto;
+  padding: 0.55rem 0.15rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.staff-time-picker span {
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  color: var(--kjenc-gray-600);
+}
+
+.staff-worker-extra {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--kjenc-gray-600);
+  background: var(--kjenc-gray-50, #f9fafb);
+  border-radius: 0.375rem;
+  padding: 0.4rem 0.6rem;
+  margin: 0.3rem 0 0.5rem;
+}
+
+.staff-worker-extra select,
+.staff-worker-extra input {
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.78rem;
+}
+
+.staff-worker-extra input[type="number"] {
+  width: 4rem;
+}
+
+.staff-lodging-group {
+  border: 1px solid var(--kjenc-gray-200);
+  border-radius: 0.375rem;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.staff-lodging-group-head {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.staff-lodging-group-head input[type="text"] {
+  flex: 1.2;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.staff-lodging-group-head input[type="number"] {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.staff-lodging-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  font-size: 0.82rem;
+}
+
+.staff-lodging-names label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.staff-lodging-per-person {
+  font-size: 0.75rem;
+  color: var(--kjenc-gray-600);
+  margin-top: 0.35rem;
+}
+
+.staff-lodging-photo {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--kjenc-gray-200);
+}
+
+/* 식사그룹 개별입력 모드(I-016): 참가자 체크 + 금액 + 결제수단을 한 줄로 배치 */
+.staff-meal-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  margin-bottom: 0.35rem;
+}
+
+.staff-meal-custom-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.staff-meal-custom-row input[type="number"] {
+  width: 90px;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.82rem;
+}
+
+.staff-lodging-photo-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--kjenc-gray-600);
+  margin-bottom: 0.25rem;
+}
+
+.staff-lodging-photo input[type="file"] {
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+.staff-remove-btn {
+  color: #b91c1c;
+  font-size: 0.85rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.staff-add-btn {
+  border: 1px dashed var(--kjenc-navy-600);
+  color: var(--kjenc-navy-700);
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  background: none;
+  cursor: pointer;
+}
+
+.staff-msg {
+  font-size: 0.85rem;
+  border-radius: 0.375rem;
+  padding: 0.6rem 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.staff-msg-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.staff-msg-success {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.staff-hub-link {
+  display: block;
+  border: 1px solid var(--kjenc-gray-200);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  text-decoration: none;
+  color: var(--kjenc-navy-900);
+  transition: border-color 0.15s ease;
+}
+
+.staff-hub-link:hover {
+  border-color: var(--kjenc-navy-600);
+}
+
+.staff-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+
+.staff-tab-btn {
+  flex: 1;
+  border: 1px solid var(--kjenc-gray-200);
+  background: #fff;
+  color: var(--kjenc-gray-600);
+  border-radius: 0.375rem;
+  padding: 0.6rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.staff-tab-btn.active {
+  border-color: var(--kjenc-navy-600);
+  background: var(--kjenc-navy-900);
+  color: #fff;
+}
+
+.staff-tab-panel {
+  display: none;
+}
+
+.staff-tab-panel.active {
+  display: block;
+}

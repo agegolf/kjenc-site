@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사업영역 | KJENC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-white text-[color:var(--kjenc-navy-900)]" data-page="services">
+
+<!-- Header -->
+<header class="header-sticky bg-white border-b border-gray-200">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2">
+      <div class="placeholder-box w-10 h-10 rounded">[로고]</div>
+      <span class="text-lg font-bold" style="color:var(--kjenc-navy-800)">KJENC</span>
+    </a>
+
+    <nav class="hidden md:flex items-center gap-6 text-sm">
+      <a href="index.html" class="nav-link" data-page="home">홈</a>
+      <a href="about.html" class="nav-link" data-page="about">회사소개</a>
+      <a href="services.html" class="nav-link" data-page="services">사업영역</a>
+      <a href="projects.html" class="nav-link" data-page="projects">시공실적</a>
+      <a href="safety.html" class="nav-link" data-page="safety">안전보건</a>
+      <a href="download.html" class="nav-link" data-page="download">자료실</a>
+      <a href="contact.html" class="nav-link" data-page="contact">문의</a>
+      <a href="staff/login.html" class="nav-link">직원 로그인</a>
+    </nav>
+
+    <div class="hidden md:flex items-center gap-4">
+      <a href="https://docs.google.com/spreadsheets/d/1Axa9PTqSl4DBH4uXhw_3rlmACLfMC0VibL7umPCECDA/edit" target="_blank" rel="noopener" title="업무일지 시트 (관리자)" class="admin-sheet-link hidden p-1" style="color:var(--kjenc-navy-700)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+      </a>
+      <a href="tel:[대표번호]" class="text-sm font-semibold" style="color:var(--kjenc-navy-700)">[대표번호]</a>
+      <a href="contact.html" class="btn-cta px-4 py-2 rounded text-sm font-semibold">견적 문의하기</a>
+    </div>
+
+    <button id="mobile-menu-btn" class="md:hidden p-2" aria-label="메뉴 열기">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+
+  <nav id="mobile-nav" class="hidden md:hidden border-t border-gray-200 px-4 py-3 flex flex-col gap-3 text-sm">
+    <a href="index.html" class="nav-link" data-page="home">홈</a>
+    <a href="about.html" class="nav-link" data-page="about">회사소개</a>
+    <a href="services.html" class="nav-link" data-page="services">사업영역</a>
+    <a href="projects.html" class="nav-link" data-page="projects">시공실적</a>
+    <a href="safety.html" class="nav-link" data-page="safety">안전보건</a>
+    <a href="download.html" class="nav-link" data-page="download">자료실</a>
+    <a href="contact.html" class="nav-link" data-page="contact">문의</a>
+      <a href="staff/login.html" class="nav-link">직원 로그인</a>
+    <a href="contact.html" class="btn-cta px-4 py-2 rounded text-center font-semibold">견적 문의하기</a>
+    <a href="https://docs.google.com/spreadsheets/d/1Axa9PTqSl4DBH4uXhw_3rlmACLfMC0VibL7umPCECDA/edit" target="_blank" rel="noopener" class="admin-sheet-link hidden nav-link">업무일지 시트 (관리자)</a>
+  </nav>
+</header>
+
+<!-- Page Title -->
+<section style="background-color:var(--kjenc-navy-900)" class="text-white">
+  <div class="max-w-6xl mx-auto px-4 py-14">
+    <h1 class="text-3xl font-bold">사업영역</h1>
+    <p class="text-gray-300 mt-2">케이블 시공의 전 공정을 커버합니다</p>
+  </div>
+</section>
+
+<!-- 5개 사업영역 -->
+<section class="max-w-6xl mx-auto px-4 py-14 space-y-8">
+
+  <div class="grid md:grid-cols-3 gap-6 border border-gray-200 rounded p-6 items-center">
+    <div class="placeholder-box h-40 rounded md:col-span-1">[ 포설 현장 사진 ]</div>
+    <div class="md:col-span-2">
+      <h2 class="text-xl font-bold mb-2" style="color:var(--kjenc-navy-700)">01. 포설</h2>
+      <p class="text-gray-600">[ 케이블 포설 공정 설명 — 지중/가공 포설 방식, 사용 장비, 시공 범위 등 ]</p>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6 border border-gray-200 rounded p-6 items-center">
+    <div class="placeholder-box h-40 rounded md:col-span-1">[ 재각 현장 사진 ]</div>
+    <div class="md:col-span-2">
+      <h2 class="text-xl font-bold mb-2" style="color:var(--kjenc-navy-700)">02. 재각</h2>
+      <p class="text-gray-600">[ 재각 공정 설명 ]</p>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6 border border-gray-200 rounded p-6 items-center">
+    <div class="placeholder-box h-40 rounded md:col-span-1">[ 철거 현장 사진 ]</div>
+    <div class="md:col-span-2">
+      <h2 class="text-xl font-bold mb-2" style="color:var(--kjenc-navy-700)">03. 철거</h2>
+      <p class="text-gray-600">[ 철거 공정 설명 ]</p>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6 border border-gray-200 rounded p-6 items-center">
+    <div class="placeholder-box h-40 rounded md:col-span-1">[ 고장복구 현장 사진 ]</div>
+    <div class="md:col-span-2">
+      <h2 class="text-xl font-bold mb-2" style="color:var(--kjenc-navy-700)">04. 고장복구</h2>
+      <p class="text-gray-600">[ 고장복구 공정 설명 — 대응 체계, 평균 출동 시간 등 ]</p>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6 border border-gray-200 rounded p-6 items-center">
+    <div class="placeholder-box h-40 rounded md:col-span-1">[ 케이블접속 현장 사진 ]</div>
+    <div class="md:col-span-2">
+      <h2 class="text-xl font-bold mb-2" style="color:var(--kjenc-navy-700)">05. 케이블접속</h2>
+      <p class="text-gray-600">[ 케이블접속 공정 설명 — 시공 가능 전압등급, 접속 자격 보유 현황 등 ]</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- CTA -->
+<section class="bg-[color:var(--kjenc-gray-100)]">
+  <div class="max-w-6xl mx-auto px-4 py-14 text-center">
+    <h2 class="text-xl font-bold mb-3" style="color:var(--kjenc-navy-800)">공사 범위가 궁금하신가요?</h2>
+    <a href="contact.html" class="btn-cta inline-block px-8 py-3 rounded font-semibold">견적 문의하기</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="border-t border-gray-200">
+  <div class="max-w-6xl mx-auto px-4 py-10 text-sm text-gray-500 grid md:grid-cols-2 gap-4">
+    <div>
+      <p class="font-semibold text-gray-700 mb-1">KJENC</p>
+      <p>대표자: [ ] · 사업자등록번호: [ ]</p>
+      <p>전기공사업 등록번호: [ ]</p>
+    </div>
+    <div class="md:text-right">
+      <p>주소: [ ]</p>
+      <p>전화: [ ]</p>
+    </div>
+  </div>
+  <div class="border-t border-gray-200 text-center text-xs text-gray-400 py-4">
+    &copy; [ ] KJENC. All rights reserved.
+  </div>
+</footer>
+
+<script>
+  // staff 로그인 세션이 있고 관리자면, 헤더의 구글 시트 바로가기 아이콘을 노출한다.
+  (function () {
+    try {
+      var raw = localStorage.getItem("kjenc_staff_session");
+      var session = raw ? JSON.parse(raw) : null;
+      if (session && session.isAdmin) {
+        document.querySelectorAll(".admin-sheet-link").forEach(function (el) {
+          el.classList.remove("hidden");
+        });
+      }
+    } catch (e) {}
+  })();
+</script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
