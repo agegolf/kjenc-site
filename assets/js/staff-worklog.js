@@ -9,10 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const rowsEl = document.getElementById("worker-rows");
   const addBtn = document.getElementById("add-worker-btn");
-  const lodgingEl = document.getElementById("lodging-groups");
-  const addLodgingBtn = document.getElementById("add-lodging-btn");
-  const mealEl = document.getElementById("meal-groups");
-  const addMealBtn = document.getElementById("add-meal-btn");
   const vehicleLogEl = document.getElementById("vehicle-logs");
   const addVehicleLogBtn = document.getElementById("add-vehiclelog-btn");
   const form = document.getElementById("worklog-form");
@@ -47,28 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
         extraHours: group.querySelector(".w-extra-hours").value,
         extraManual: group.querySelector(".w-extra-hours").dataset.manual === "true",
         overtimeHours: group.querySelector(".w-overtime-hours").value,
-      })),
-      lodgingGroups: Array.from(lodgingEl.querySelectorAll(".staff-lodging-group")).map((group) => ({
-        site: group.querySelector(".l-site").value,
-        roomType: group.querySelector(".l-roomtype").value,
-        amount: group.querySelector(".l-amount").value,
-        paymentMethod: group.querySelector(".l-payment").value,
-        names: Array.from(group.querySelectorAll(".l-name")).filter((cb) => cb.checked).map((cb) => cb.value),
-      })),
-      mealGroups: Array.from(mealEl.querySelectorAll(".staff-lodging-group")).map((group) => ({
-        site: group.querySelector(".l-site").value,
-        mealType: group.querySelector(".l-mealtype").value,
-        mode: group.querySelector(".l-mode").value,
-        amount: group.querySelector(".l-amount").value,
-        paymentMethod: group.querySelector(".l-payment").value,
-        names: Array.from(group.querySelectorAll(".l-name")).filter((cb) => cb.checked).map((cb) => cb.value),
-        participants: Array.from(group.querySelectorAll(".staff-meal-custom-row"))
-          .filter((row) => row.querySelector(".mc-check").checked)
-          .map((row) => ({
-            name: row.querySelector(".mc-check").value,
-            amount: row.querySelector(".mc-amount").value,
-            paymentMethod: row.querySelector(".mc-payment").value,
-          })),
       })),
       vehicleLogs: Array.from(vehicleLogEl.querySelectorAll(".staff-lodging-group")).map((group) => {
         const dh = group.querySelector(".v-depart-h").value;
@@ -225,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <option value="조퇴">조퇴</option>
           <option value="결근">결근</option>
           <option value="휴가">휴가</option>
+          <option value="병가">병가</option>
         </select>
       </div>
       <button type="button" class="staff-remove-btn">삭제</button>
@@ -329,11 +304,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!isCompanyCar) vehicleSel.value = "";
     }
 
-    // "이동만" 또는 근태상태="휴가"를 고르면 나머지 필드는 의미가 없으므로 비활성화한다
-    // (I-012 2026-08-05: "휴가"는 근무시간/지원금/이동시간 전부 0으로 서버에서 강제됨).
+    // "이동만" 또는 근태상태="휴가"/"병가"를 고르면 나머지 필드는 의미가 없으므로
+    // 비활성화한다(I-012 2026-08-05: "휴가"는 근무시간/지원금/이동시간 전부 0으로
+    // 서버에서 강제됨 — I-021(2026-08-09)에서 "병가"도 동일하게 취급하도록 확장).
     function applyWorktypeUI() {
       const isMoveOnly = worktypeSel.value === "이동만";
-      const isVacation = statusSel.value === "휴가";
+      const isVacation = statusSel.value === "휴가" || statusSel.value === "병가";
       statusSel.disabled = isMoveOnly;
       if (isMoveOnly) statusSel.value = "정상";
       extraLabelEl.textContent = isMoveOnly
@@ -387,218 +363,6 @@ document.addEventListener("DOMContentLoaded", () => {
     group.appendChild(extraRow);
     group.appendChild(overtimeRow);
     rowsEl.appendChild(group);
-  }
-
-  function lodgingNameCheckboxes() {
-    return STAFF_KNOWN_NAMES.map(
-      (n) => `<label><input type="checkbox" class="l-name" value="${n}"> ${n}</label>`
-    ).join("");
-  }
-
-  // saved(선택, 새로고침 복원용): { site, roomType, amount, paymentMethod, names:[] }
-  // 영수증 사진은 File 객체라 localStorage에 저장할 수 없어 복원 대상에서 제외한다.
-  function addLodgingGroup(saved) {
-    saved = saved || {};
-    const group = document.createElement("div");
-    group.className = "staff-lodging-group";
-    group.innerHTML = `
-      <div class="staff-lodging-group-head">
-        <input type="text" class="l-site" placeholder="현장명" value="${(saved.site || "").replace(/"/g, "&quot;")}">
-        <select class="staff-select l-roomtype" style="flex:1;">
-          <option value="">방타입(선택)</option>
-          <option value="침대1">침대1</option>
-          <option value="침대2">침대2</option>
-        </select>
-        <input type="number" class="l-amount" placeholder="실제 결제금액(원)" min="0" step="1000" value="${saved.amount || ""}">
-        <button type="button" class="staff-remove-btn l-remove">삭제</button>
-      </div>
-      <div class="staff-lodging-group-head">
-        <select class="staff-select l-payment" style="flex:1;" required>
-          <option value="">결제수단(선택)</option>
-          <option value="회사카드">회사카드</option>
-          <option value="개인카드">개인카드</option>
-        </select>
-      </div>
-      <div class="staff-lodging-names">${lodgingNameCheckboxes()}</div>
-      <p class="staff-lodging-per-person"></p>
-      <div class="staff-lodging-photo">
-        <label class="staff-lodging-photo-label">영수증 사진 (필수, 새로고침 시 다시 첨부해주세요)</label>
-        <input type="file" class="l-photo" accept="image/*" capture="environment">
-      </div>
-    `;
-    if (saved.roomType) group.querySelector(".l-roomtype").value = saved.roomType;
-    if (saved.paymentMethod) group.querySelector(".l-payment").value = saved.paymentMethod;
-    (saved.names || []).forEach((n) => {
-      const cb = group.querySelector(`.l-name[value="${n}"]`);
-      if (cb) cb.checked = true;
-    });
-
-    const amountInput = group.querySelector(".l-amount");
-    const perPersonEl = group.querySelector(".staff-lodging-per-person");
-    const nameCheckboxes = Array.from(group.querySelectorAll(".l-name"));
-
-    function updatePerPerson() {
-      const checkedCount = nameCheckboxes.filter((cb) => cb.checked).length;
-      const amount = Number(amountInput.value) || 0;
-      if (checkedCount > 0 && amount > 0) {
-        const perPerson = Math.round(amount / checkedCount);
-        perPersonEl.textContent = `→ ${checkedCount}명 기준 1인당 ${perPerson.toLocaleString()}원`;
-      } else {
-        perPersonEl.textContent = "";
-      }
-    }
-
-    amountInput.addEventListener("input", updatePerPerson);
-    nameCheckboxes.forEach((cb) => cb.addEventListener("change", updatePerPerson));
-    group.querySelector(".l-remove").addEventListener("click", () => {
-      group.remove();
-      saveDraft();
-    });
-    group.addEventListener("input", saveDraft);
-    group.addEventListener("change", saveDraft);
-    updatePerPerson();
-
-    lodgingEl.appendChild(group);
-  }
-
-  // 식사그룹(I-016 2026-08-06): 결제 상황이 다양함(대표 회사카드 결제/대표 개인카드
-  // 결제/각자 결제, 각자 다른 금액)을 커버하기 위해 "균등분배"와 "개별입력" 두 모드를
-  // 그룹 단위로 선택한다.
-  //  - 균등분배: 기존 방식(총액 1개 → 참가자 수로 나눔), 결제수단도 그룹 전체 1개.
-  //  - 개별입력: 참가자를 체크하면 그 사람 전용 금액/결제수단 입력란이 나타난다 —
-  //    각자 결제, 각자 금액이 다른 경우에 대응.
-  // saved(선택, 새로고침 복원용): { site, mealType, mode, amount, paymentMethod, names:[],
-  // participants:[{name,amount,paymentMethod}] }
-  function addMealGroup(saved) {
-    saved = saved || {};
-    const group = document.createElement("div");
-    group.className = "staff-lodging-group";
-    group.innerHTML = `
-      <div class="staff-lodging-group-head">
-        <input type="text" class="l-site" placeholder="현장명" value="${(saved.site || "").replace(/"/g, "&quot;")}">
-        <select class="staff-select l-mealtype" style="flex:1;">
-          <option value="">식사구분(선택)</option>
-          <option value="아침">아침</option>
-          <option value="점심">점심</option>
-          <option value="간식">간식</option>
-          <option value="저녁">저녁</option>
-          <option value="회식">회식</option>
-        </select>
-        <button type="button" class="staff-remove-btn l-remove">삭제</button>
-      </div>
-      <div class="staff-lodging-group-head">
-        <select class="staff-select l-mode" style="flex:1;">
-          <option value="custom">개별입력 (각자 결제, 금액이 다를 수 있음)</option>
-          <option value="even">균등분배 (대표 1명이 결제, 인원수로 나눔)</option>
-        </select>
-      </div>
-      <div class="l-even-fields">
-        <div class="staff-lodging-group-head">
-          <input type="number" class="l-amount" placeholder="실제 결제금액(원)" min="0" step="1000" value="${saved.amount || ""}">
-          <select class="staff-select l-payment" style="flex:1;">
-            <option value="">결제수단(선택)</option>
-            <option value="회사카드">회사카드</option>
-            <option value="개인카드">개인카드</option>
-          </select>
-        </div>
-        <div class="staff-lodging-names">${lodgingNameCheckboxes()}</div>
-        <p class="staff-lodging-per-person"></p>
-      </div>
-      <div class="l-custom-fields hidden">
-        <div class="staff-meal-custom-rows"></div>
-      </div>
-      <div class="staff-lodging-photo">
-        <label class="staff-lodging-photo-label">영수증 사진 (선택, 새로고침 시 다시 첨부해주세요)</label>
-        <input type="file" class="l-photo" accept="image/*" capture="environment">
-      </div>
-    `;
-    if (saved.mealType) group.querySelector(".l-mealtype").value = saved.mealType;
-    if (saved.mode) group.querySelector(".l-mode").value = saved.mode;
-    if (saved.paymentMethod) group.querySelector(".l-payment").value = saved.paymentMethod;
-    (saved.names || []).forEach((n) => {
-      const cb = group.querySelector(`.l-name[value="${n}"]`);
-      if (cb) cb.checked = true;
-    });
-
-    const modeSel = group.querySelector(".l-mode");
-    const evenFieldsEl = group.querySelector(".l-even-fields");
-    const customFieldsEl = group.querySelector(".l-custom-fields");
-    const customRowsEl = group.querySelector(".staff-meal-custom-rows");
-    const amountInput = group.querySelector(".l-amount");
-    const perPersonEl = group.querySelector(".staff-lodging-per-person");
-    const nameCheckboxes = Array.from(group.querySelectorAll(".l-name"));
-
-    function updatePerPerson() {
-      const checkedCount = nameCheckboxes.filter((cb) => cb.checked).length;
-      const amount = Number(amountInput.value) || 0;
-      if (checkedCount > 0 && amount > 0) {
-        const perPerson = Math.round(amount / checkedCount);
-        perPersonEl.textContent = `→ ${checkedCount}명 기준 1인당 실사용 ${perPerson.toLocaleString()}원`;
-      } else {
-        perPersonEl.textContent = "";
-      }
-    }
-
-    // 개별입력 모드: 참가자를 체크박스로 고르면 그 사람 전용 금액/결제수단 입력행이
-    // 나타난다. 이름은 균등분배와 같은 STAFF_KNOWN_NAMES 체크박스 목록을 재사용한다.
-    function renderCustomRows() {
-      const savedParticipants = {};
-      (saved.participants || []).forEach((p) => { savedParticipants[p.name] = p; });
-
-      customRowsEl.innerHTML = STAFF_KNOWN_NAMES.map((n) => `
-        <div class="staff-meal-custom-row">
-          <label><input type="checkbox" class="mc-check" value="${n}"> ${n}</label>
-          <input type="number" class="mc-amount" placeholder="금액(원)" min="0" step="500" disabled>
-          <select class="staff-select mc-payment" disabled>
-            <option value="">결제수단</option>
-            <option value="회사카드">회사카드</option>
-            <option value="개인카드">개인카드</option>
-          </select>
-        </div>
-      `).join("");
-      customRowsEl.querySelectorAll(".staff-meal-custom-row").forEach((row) => {
-        const check = row.querySelector(".mc-check");
-        const amt = row.querySelector(".mc-amount");
-        const pay = row.querySelector(".mc-payment");
-        const p = savedParticipants[check.value];
-        if (p) {
-          check.checked = true;
-          amt.disabled = false;
-          pay.disabled = false;
-          if (p.amount) amt.value = p.amount;
-          if (p.paymentMethod) pay.value = p.paymentMethod;
-        }
-        check.addEventListener("change", () => {
-          amt.disabled = !check.checked;
-          pay.disabled = !check.checked;
-          if (!check.checked) { amt.value = ""; pay.value = ""; }
-          saveDraft();
-        });
-        amt.addEventListener("input", saveDraft);
-        pay.addEventListener("change", saveDraft);
-      });
-    }
-    renderCustomRows();
-
-    function applyModeUI() {
-      const isCustom = modeSel.value === "custom";
-      evenFieldsEl.classList.toggle("hidden", isCustom);
-      customFieldsEl.classList.toggle("hidden", !isCustom);
-    }
-    modeSel.addEventListener("change", applyModeUI);
-    applyModeUI();
-
-    amountInput.addEventListener("input", updatePerPerson);
-    nameCheckboxes.forEach((cb) => cb.addEventListener("change", updatePerPerson));
-    group.querySelector(".l-remove").addEventListener("click", () => {
-      group.remove();
-      saveDraft();
-    });
-    group.addEventListener("input", saveDraft);
-    group.addEventListener("change", saveDraft);
-    updatePerPerson();
-
-    mealEl.appendChild(group);
   }
 
   // 차량이동로그(I-014 2026-08-06 신규): 오늘 사용한 차량이 현장 간 어떻게 이동했는지
@@ -707,8 +471,6 @@ document.addEventListener("DOMContentLoaded", () => {
   dateInput.addEventListener("change", checkExistingWorklog);
 
   addBtn.addEventListener("click", () => { addWorkerRow(); saveDraft(); });
-  addLodgingBtn.addEventListener("click", () => { addLodgingGroup(); saveDraft(); });
-  addMealBtn.addEventListener("click", () => { addMealGroup(); saveDraft(); });
   addVehicleLogBtn.addEventListener("click", () => { addVehicleLogGroup(); saveDraft(); });
 
   // 기본 필드(날짜/현장명/구분/거래처/작업내용)도 변경 시 초안 저장.
@@ -730,8 +492,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (draft.client) document.getElementById("f-client").value = draft.client;
     if (draft.workContent) contentInput.value = draft.workContent;
     (draft.workers && draft.workers.length > 0 ? draft.workers : [null]).forEach((w) => addWorkerRow(w || undefined));
-    (draft.lodgingGroups || []).forEach((g) => addLodgingGroup(g));
-    (draft.mealGroups || []).forEach((g) => addMealGroup(g));
     (draft.vehicleLogs || []).forEach((v) => addVehicleLogGroup(v));
     msgEl.textContent = "이전에 작성 중이던 내용을 불러왔습니다. 사진 첨부는 다시 해주세요.";
     msgEl.classList.add("staff-msg-success");
@@ -806,7 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
         errors.push(`${w.name}님이 근무 인원에 중복 입력되었습니다.`);
       }
       seenWorkerNames.add(w.name);
-      if (w.status !== "휴가" && w.start === w.end) {
+      if (w.status !== "휴가" && w.status !== "병가" && w.start === w.end) {
         errors.push(`${w.name}님의 근무시작·근무종료 시각이 같습니다(근무시간 0시간). 확인해주세요.`);
       }
       if (w.travel === "회사차" && !w.vehicleNumber) {
@@ -821,153 +581,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (errors.length > 0) {
       showErrors(errors);
       return;
-    }
-
-    const lodgingGroupsRaw = await Promise.all(
-      Array.from(lodgingEl.querySelectorAll(".staff-lodging-group")).map(async (group) => {
-        const fileInput = group.querySelector(".l-photo");
-        let photoBase64 = null;
-        let photoName = null;
-        let photoMime = null;
-        if (fileInput && fileInput.files && fileInput.files[0]) {
-          const file = fileInput.files[0];
-          photoBase64 = await staffFileToBase64(file);
-          photoName = file.name;
-          photoMime = file.type;
-        }
-        return {
-          site: group.querySelector(".l-site").value,
-          roomType: group.querySelector(".l-roomtype").value,
-          amount: Number(group.querySelector(".l-amount").value) || 0,
-          paymentMethod: group.querySelector(".l-payment").value,
-          names: Array.from(group.querySelectorAll(".l-name"))
-            .filter((cb) => cb.checked)
-            .map((cb) => cb.value),
-          photoBase64: photoBase64,
-          photoName: photoName,
-          photoMime: photoMime,
-        };
-      })
-    );
-    const lodgingGroups = lodgingGroupsRaw.filter((g) => g.names.length > 0 || g.amount > 0);
-
-    for (const g of lodgingGroups) {
-      if (g.names.length === 0) {
-        msgEl.textContent = "숙박그룹에 결제금액을 입력했다면 참가자를 1명 이상 선택해주세요.";
-        msgEl.classList.add("staff-msg-error");
-        msgEl.classList.remove("hidden");
-        return;
-      }
-      if (g.amount <= 0) {
-        msgEl.textContent = "숙박그룹에 참가자를 선택했다면 실제 결제금액을 입력해주세요.";
-        msgEl.classList.add("staff-msg-error");
-        msgEl.classList.remove("hidden");
-        return;
-      }
-      if (!g.paymentMethod) {
-        msgEl.textContent = "숙박그룹의 결제수단(회사카드/개인카드)을 선택해주세요.";
-        msgEl.classList.add("staff-msg-error");
-        msgEl.classList.remove("hidden");
-        return;
-      }
-    }
-
-    const seenNames = new Set();
-    for (const g of lodgingGroups) {
-      for (const n of g.names) {
-        if (seenNames.has(n)) {
-          msgEl.textContent = `${n}님이 여러 숙박그룹에 중복 선택되었습니다. 확인해주세요.`;
-          msgEl.classList.add("staff-msg-error");
-          msgEl.classList.remove("hidden");
-          return;
-        }
-        seenNames.add(n);
-      }
-    }
-
-    // 식사그룹(I-016 2026-08-06): 그룹마다 mode("even"=균등분배/"custom"=개별입력)에
-    // 따라 다른 payload 구조를 만든다.
-    const mealGroupsRaw = await Promise.all(
-      Array.from(mealEl.querySelectorAll(".staff-lodging-group")).map(async (group) => {
-        const fileInput = group.querySelector(".l-photo");
-        let photoBase64 = null;
-        let photoName = null;
-        let photoMime = null;
-        if (fileInput && fileInput.files && fileInput.files[0]) {
-          const file = fileInput.files[0];
-          photoBase64 = await staffFileToBase64(file);
-          photoName = file.name;
-          photoMime = file.type;
-        }
-        const mode = group.querySelector(".l-mode").value === "custom" ? "custom" : "even";
-        const base = {
-          site: group.querySelector(".l-site").value,
-          mealType: group.querySelector(".l-mealtype").value,
-          mode: mode,
-          photoBase64: photoBase64,
-          photoName: photoName,
-          photoMime: photoMime,
-        };
-        if (mode === "custom") {
-          const participants = Array.from(group.querySelectorAll(".staff-meal-custom-row"))
-            .filter((row) => row.querySelector(".mc-check").checked)
-            .map((row) => ({
-              name: row.querySelector(".mc-check").value,
-              amount: Number(row.querySelector(".mc-amount").value) || 0,
-              paymentMethod: row.querySelector(".mc-payment").value,
-            }));
-          return Object.assign(base, { participants: participants });
-        }
-        return Object.assign(base, {
-          amount: Number(group.querySelector(".l-amount").value) || 0,
-          paymentMethod: group.querySelector(".l-payment").value,
-          names: Array.from(group.querySelectorAll(".l-name"))
-            .filter((cb) => cb.checked)
-            .map((cb) => cb.value),
-        });
-      })
-    );
-    const mealGroups = mealGroupsRaw.filter((g) => {
-      if (g.mode === "custom") return (g.participants || []).length > 0;
-      return (g.names || []).length > 0 || g.amount > 0;
-    });
-
-    for (const g of mealGroups) {
-      if (g.mode === "custom") {
-        for (const p of g.participants) {
-          if (!p.amount || p.amount <= 0) {
-            msgEl.textContent = `${p.name}님의 식사 금액을 입력해주세요.`;
-            msgEl.classList.add("staff-msg-error");
-            msgEl.classList.remove("hidden");
-            return;
-          }
-          if (!p.paymentMethod) {
-            msgEl.textContent = `${p.name}님의 결제수단을 선택해주세요.`;
-            msgEl.classList.add("staff-msg-error");
-            msgEl.classList.remove("hidden");
-            return;
-          }
-        }
-        continue;
-      }
-      if (g.names.length === 0) {
-        msgEl.textContent = "식사그룹에 결제금액을 입력했다면 참가자를 1명 이상 선택해주세요.";
-        msgEl.classList.add("staff-msg-error");
-        msgEl.classList.remove("hidden");
-        return;
-      }
-      if (g.amount <= 0) {
-        msgEl.textContent = "식사그룹에 참가자를 선택했다면 실제 결제금액을 입력해주세요.";
-        msgEl.classList.add("staff-msg-error");
-        msgEl.classList.remove("hidden");
-        return;
-      }
-      if (!g.paymentMethod) {
-        msgEl.textContent = "식사그룹의 결제수단(회사카드/개인카드)을 선택해주세요.";
-        msgEl.classList.add("staff-msg-error");
-        msgEl.classList.remove("hidden");
-        return;
-      }
     }
 
     // 차량이동로그(I-014 2026-08-06): 차량번호가 선택된 행만 저장 대상으로 삼는다.
@@ -998,8 +611,6 @@ document.addEventListener("DOMContentLoaded", () => {
       client: document.getElementById("f-client").value,
       workContent: document.getElementById("f-content").value,
       workers: workers,
-      lodgingGroups: lodgingGroups,
-      mealGroups: mealGroups,
       vehicleLogs: vehicleLogs,
     };
 
@@ -1023,8 +634,6 @@ document.addEventListener("DOMContentLoaded", () => {
       dateInput.value = new Date().toISOString().slice(0, 10);
       rowsEl.innerHTML = "";
       addWorkerRow();
-      lodgingEl.innerHTML = "";
-      mealEl.innerHTML = "";
       vehicleLogEl.innerHTML = "";
       renderExistingCard(false);
     } else {

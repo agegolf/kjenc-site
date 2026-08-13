@@ -24,10 +24,11 @@
     <p class="text-sm text-gray-500 mb-6">이름과 개인 PIN 코드를 입력해주세요.</p>
 
     <form id="login-form" class="space-y-4">
-      <div>
+      <div class="relative">
         <label class="staff-label">이름</label>
-        <input list="employee-list" id="f-name" class="staff-input" placeholder="이름을 입력하세요" autocomplete="off">
-        <datalist id="employee-list"></datalist>
+        <input id="f-name" class="staff-input" placeholder="이름을 입력하세요" autocomplete="off">
+        <ul id="name-dropdown"
+            class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded shadow max-h-48 overflow-y-auto"></ul>
       </div>
       <div>
         <label class="staff-label">PIN 코드</label>
@@ -44,18 +45,52 @@
     </a>
   </div>
 </div>
+<script src="../assets/js/staff-config.js"></script>
 <script>
+  // I-025(2026-08-13): iOS Safari/Chrome이 <datalist> 드롭다운을 지원하지 않아
+  // (입력란은 나오지만 자동완성 목록이 전혀 뜨지 않음) JS로 직접 만든 드롭다운으로
+  // 대체 — 플랫폼과 무관하게 항상 동일하게 작동한다. 이름 목록은 서버(직원명단
+  // 시트, 재직자만)에서 실시간으로 가져오고, API 실패 시에만 STAFF_KNOWN_NAMES로
+  // 폴백한다.
   document.addEventListener("DOMContentLoaded", () => {
-    const dl = document.getElementById("employee-list");
-    STAFF_KNOWN_NAMES.forEach((n) => {
-      const opt = document.createElement("option");
-      opt.value = n;
-      dl.appendChild(opt);
+    const nameInput = document.getElementById("f-name");
+    const dropdownEl = document.getElementById("name-dropdown");
+    let names = STAFF_KNOWN_NAMES;
+
+    staffApiCall("getEmployeeNames", {}).then((result) => {
+      if (result.ok && result.names && result.names.length > 0) {
+        names = result.names;
+      }
+    });
+
+    function renderDropdown(filterText) {
+      const filtered = names.filter((n) => n.includes(filterText));
+      if (filtered.length === 0) {
+        dropdownEl.classList.add("hidden");
+        return;
+      }
+      dropdownEl.innerHTML = filtered
+        .map((n) => `<li class="px-3 py-2 cursor-pointer hover:bg-gray-100">${n}</li>`)
+        .join("");
+      dropdownEl.classList.remove("hidden");
+    }
+
+    nameInput.addEventListener("focus", () => renderDropdown(nameInput.value));
+    nameInput.addEventListener("input", () => renderDropdown(nameInput.value));
+    dropdownEl.addEventListener("click", (e) => {
+      if (e.target.tagName === "LI") {
+        nameInput.value = e.target.textContent;
+        dropdownEl.classList.add("hidden");
+      }
+    });
+    document.addEventListener("click", (e) => {
+      if (e.target !== nameInput && !dropdownEl.contains(e.target)) {
+        dropdownEl.classList.add("hidden");
+      }
     });
   });
 </script>
 
-<script src="../assets/js/staff-config.js"></script>
 <script src="../assets/js/staff-login.js"></script>
 </body>
 </html>

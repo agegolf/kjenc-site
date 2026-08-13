@@ -41,6 +41,7 @@
         <label class="staff-label">항목분류</label>
         <select id="f-category" class="staff-select">
           <option value="식비">식비</option>
+          <option value="숙박">숙박</option>
           <option value="유류비">유류비</option>
           <option value="정비">정비</option>
           <option value="통행료">통행료</option>
@@ -52,7 +53,7 @@
         <select id="f-payment" class="staff-select" required>
           <option value="">선택해주세요</option>
           <option value="회사카드">회사카드</option>
-          <option value="직원카드">직원카드</option>
+          <option value="개인카드">개인카드</option>
         </select>
       </div>
     </div>
@@ -66,6 +67,17 @@
       <label class="staff-label">차량번호 (선택)</label>
       <select id="f-vehicle" class="staff-select"></select>
       <p class="text-xs text-gray-400 mt-1">유류비·정비 지출인 경우에만 선택해주세요.</p>
+    </div>
+
+    <div id="room-type-field" class="hidden">
+      <label class="staff-label">방타입</label>
+      <input type="text" id="f-room-type" class="staff-input" placeholder="예: 2인실">
+    </div>
+
+    <div id="participants-field" class="hidden">
+      <label class="staff-label">함께한 인원 (본인 포함)</label>
+      <div id="f-participants" class="grid grid-cols-3 gap-2 text-sm"></div>
+      <p class="text-xs text-gray-400 mt-1">금액은 선택한 인원 수로 균등분배되어 식사그룹/숙박예약에 기록됩니다.</p>
     </div>
 
     <div>

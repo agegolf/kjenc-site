@@ -77,23 +77,11 @@
       <div id="vehicle-logs"></div>
     </div>
 
-    <div>
-      <div class="flex items-center justify-between mb-2">
-        <label class="staff-label" style="margin-bottom:0;">숙박 정보 (있는 경우만)</label>
-        <button type="button" id="add-lodging-btn" class="staff-add-btn">+ 숙박그룹 추가</button>
-      </div>
-      <p class="text-xs text-gray-400 mb-2">같은 방에 묵는 사람들을 묶어서 실제 결제금액을 입력하면, 인원수로 나눠서 1인당 실사용 금액이 자동 계산됩니다. 이 금액이 그대로 월말에 개인별 숙박지원금으로 합산됩니다. (예: 준특실 2인 50,000원 → 1인당 25,000원)</p>
-      <div id="lodging-groups"></div>
-    </div>
-
-    <div>
-      <div class="flex items-center justify-between mb-2">
-        <label class="staff-label" style="margin-bottom:0;">식사 정보 (있는 경우만)</label>
-        <button type="button" id="add-meal-btn" class="staff-add-btn">+ 식사그룹 추가</button>
-      </div>
-      <p class="text-xs text-gray-400 mb-2">참가자별로 실제 결제한 금액을 각자 입력해주세요(기본: 개별입력). 이 금액이 그대로 월말에 개인별 식대지출로 합산됩니다(정액 지급이 아닌 실지출 정산). 한 명이 대표로 결제하고 인원수로 나눠도 된다면 "균등분배"를 선택해주세요.</p>
-      <div id="meal-groups"></div>
-    </div>
+    <p class="text-xs text-gray-400">
+      숙박·식비 지출은 <a href="receipts.html" class="underline">영수증 업로드</a>에서
+      항목분류를 "숙박"/"식비"로 선택하고 함께한 인원을 고르면 자동으로 기록됩니다
+      (I-023, 2026-08-09 — 이전에는 여기서 따로 입력했으나 영수증 등록으로 일원화).
+    </p>
 
     <p id="worklog-msg" class="staff-msg hidden"></p>
     <button type="submit" class="btn-cta w-full py-3 rounded font-semibold">업무일지 저장</button>
