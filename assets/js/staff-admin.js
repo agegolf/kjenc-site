@@ -80,5 +80,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // I-031(2026-08-15): 같은 날짜+참가자 겹침+금액 유사로 묶이는 식사그룹/숙박예약을
+  // 모아 보여준다 — 저장 시점 경고를 우회했거나 그 이전에 등록된 중복도 사후에
+  // 훑어볼 수 있게 하기 위함.
+  const dupListEl = document.getElementById("duplicate-list");
+  const dupEmptyEl = document.getElementById("duplicate-empty");
+  const dupTemplate = document.getElementById("duplicate-item-template");
+
+  async function loadDuplicateSuspects() {
+    dupListEl.innerHTML = "";
+    dupEmptyEl.classList.add("hidden");
+
+    const result = await staffApiCall("getDuplicateSuspects", { name: session.name, pin: session.pin });
+    if (!result.ok || !result.suspects || result.suspects.length === 0) {
+      dupEmptyEl.classList.remove("hidden");
+      return;
+    }
+    result.suspects.forEach((s) => renderDuplicateItem(s));
+  }
+
+  function renderDuplicateItem(s) {
+    const node = dupTemplate.content.cloneNode(true);
+    node.querySelector(".d-type").textContent = s.type;
+    node.querySelector(".d-date").textContent = s.date;
+    node.querySelector(".d-overlap").textContent = s.overlapNames.join(", ");
+    node.querySelector(".d-rowA").textContent = s.rowA;
+    node.querySelector(".d-amountA").textContent = Number(s.amountA).toLocaleString();
+    node.querySelector(".d-rowB").textContent = s.rowB;
+    node.querySelector(".d-amountB").textContent = Number(s.amountB).toLocaleString();
+    const photoA = node.querySelector(".d-photoA");
+    if (s.photoUrlA) { photoA.href = s.photoUrlA; photoA.classList.remove("hidden"); }
+    const photoB = node.querySelector(".d-photoB");
+    if (s.photoUrlB) { photoB.href = s.photoUrlB; photoB.classList.remove("hidden"); }
+    dupListEl.appendChild(node);
+  }
+
   loadPending();
+  loadDuplicateSuspects();
 });

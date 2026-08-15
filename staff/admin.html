@@ -27,7 +27,29 @@
   <p id="admin-msg" class="staff-msg hidden"></p>
   <p id="admin-empty" class="text-sm text-gray-400 hidden">대기중인 영수증이 없습니다.</p>
   <div id="admin-list" class="space-y-4"></div>
+
+  <h2 class="text-lg font-bold mt-10 mb-1">중복 의심 목록</h2>
+  <p class="text-sm text-gray-500 mb-4">같은 날짜 + 참가자 2명 이상 겹침 + 금액이 비슷한(±10%) 식사그룹/숙박예약을 모아 보여줍니다. 실수로 같은 영수증을 여러 번 등록한 경우가 없는지 확인해주세요.</p>
+  <p id="duplicate-empty" class="text-sm text-gray-400 hidden">중복 의심 항목이 없습니다.</p>
+  <div id="duplicate-list" class="space-y-4"></div>
 </div>
+
+<template id="duplicate-item-template">
+  <div class="staff-card">
+    <p class="text-sm font-semibold mb-2"><span class="d-type"></span> · <span class="d-date"></span> · 겹치는 인원: <span class="d-overlap"></span></p>
+    <div class="grid sm:grid-cols-2 gap-3 text-sm">
+      <div class="border rounded p-2">
+        <p>행 <span class="d-rowA"></span> · <span class="d-amountA"></span>원</p>
+        <a href="#" target="_blank" rel="noopener" class="d-photoA text-blue-600 underline hidden">사진 보기</a>
+      </div>
+      <div class="border rounded p-2">
+        <p>행 <span class="d-rowB"></span> · <span class="d-amountB"></span>원</p>
+        <a href="#" target="_blank" rel="noopener" class="d-photoB text-blue-600 underline hidden">사진 보기</a>
+      </div>
+    </div>
+    <p class="text-xs text-gray-400 mt-2">중복이 확인되면 구글시트에서 해당 시트의 중복 행을 직접 삭제해주세요.</p>
+  </div>
+</template>
 
 <template id="receipt-item-template">
   <div class="staff-card receipt-item">

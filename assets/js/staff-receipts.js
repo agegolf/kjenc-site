@@ -119,7 +119,26 @@ document.addEventListener("DOMContentLoaded", () => {
     submitBtn.disabled = true;
     submitBtn.textContent = "업로드 중...";
 
-    const result = await staffApiCall("saveReceipt", payload);
+    let result = await staffApiCall("saveReceipt", payload);
+
+    // I-031(2026-08-15): 서버가 참가자 겹침+금액 유사로 "이미 등록된 것 같다"고
+    // 판단하면 needsConfirm과 함께 저장을 거부한다 — 사용자에게 확인받고
+    // "그래도 등록"을 고르면 같은 payload에 forceSubmit만 추가해 재요청한다
+    // (사진은 이미 base64로 변환해 payload에 있으므로 다시 첨부할 필요 없음).
+    if (!result.ok && result.needsConfirm) {
+      const confirmed = window.confirm(result.message);
+      if (confirmed) {
+        payload.forceSubmit = true;
+        result = await staffApiCall("saveReceipt", payload);
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "영수증 등록";
+        msgEl.textContent = "등록을 취소했습니다.";
+        msgEl.classList.add("staff-msg-error");
+        msgEl.classList.remove("hidden");
+        return;
+      }
+    }
 
     submitBtn.disabled = false;
     submitBtn.textContent = "영수증 등록";
