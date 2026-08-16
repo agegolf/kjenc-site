@@ -80,9 +80,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // I-031(2026-08-15): 같은 날짜+참가자 겹침+금액 유사로 묶이는 식사그룹/숙박예약을
-  // 모아 보여준다 — 저장 시점 경고를 우회했거나 그 이전에 등록된 중복도 사후에
-  // 훑어볼 수 있게 하기 위함.
+  // I-031(2026-08-15): 같은 날짜+참가자 겹침+금액 유사로 묶이는 식대지출(I-036)/
+  // 숙박예약을 모아 보여준다 — 저장 시점 경고를 우회했거나 그 이전에 등록된 중복도
+  // 사후에 훑어볼 수 있게 하기 위함.
   const dupListEl = document.getElementById("duplicate-list");
   const dupEmptyEl = document.getElementById("duplicate-empty");
   const dupTemplate = document.getElementById("duplicate-item-template");

@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const participantsEl = document.getElementById("f-participants");
 
   // I-023(2026-08-09): 항목분류가 식비/숙박이면 "함께한 인원"을 체크박스로 고를 수
-  // 있게 한다 — 본인은 기본 체크. 선택된 인원 목록은 저장 시 식사그룹/숙박예약
+  // 있게 한다 — 본인은 기본 체크. 선택된 인원 목록은 저장 시 식대지출(I-036)/숙박예약
   // 시트에 균등분배(1인당 = 금액/인원수)로 함께 기록된다(saveMealGroups_/
   // saveLodgingGroups_ 재사용, handleSaveReceipt_에서 호출).
   participantsEl.innerHTML = STAFF_KNOWN_NAMES.map(
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
       photoName: photoName,
       photoMime: photoMime,
       // I-023(2026-08-09): 식비/숙박이고 함께한 인원이 2명 이상이면 서버가 이
-      // 영수증을 식사그룹/숙박예약 시트에도 균등분배로 함께 기록한다.
+      // 영수증을 식대지출(I-036)/숙박예약 시트에도 균등분배로 함께 기록한다.
       roomType: roomTypeInput.value,
       participants: (category === "식비" || category === "숙박") ? participants : [],
     };
