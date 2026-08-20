@@ -66,12 +66,25 @@
     <div id="vehicle-field" class="hidden">
       <label class="staff-label">차량번호 (선택)</label>
       <select id="f-vehicle" class="staff-select"></select>
-      <p class="text-xs text-gray-400 mt-1">유류비·정비 지출인 경우에만 선택해주세요.</p>
+      <p class="text-xs text-gray-400 mt-1">유류비·정비·통행료 지출인 경우에만 선택해주세요.</p>
     </div>
 
     <div id="room-type-field" class="hidden">
-      <label class="staff-label">방타입</label>
-      <input type="text" id="f-room-type" class="staff-input" placeholder="예: 2인실">
+      <label class="staff-label">방타입 (인실 유형별 개수)</label>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <label class="text-xs text-gray-500">1인실</label>
+          <input type="number" id="f-room-1" class="staff-input" min="0" value="0">
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">2인실</label>
+          <input type="number" id="f-room-2" class="staff-input" min="0" value="0">
+        </div>
+        <div>
+          <label class="text-xs text-gray-500">3인실</label>
+          <input type="number" id="f-room-3" class="staff-input" min="0" value="0">
+        </div>
+      </div>
     </div>
 
     <div id="participants-field" class="hidden">

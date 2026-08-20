@@ -11,7 +11,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const vehicleFieldEl = document.getElementById("vehicle-field");
   const vehicleSel = document.getElementById("f-vehicle");
   const roomTypeFieldEl = document.getElementById("room-type-field");
-  const roomTypeInput = document.getElementById("f-room-type");
+  // I-058(2026-08-16): 방타입은 "1인실/2인실/3인실"처럼 한 예약에 여러
+  // 인실 유형이 동시에 섞이는 복합값이라 자유텍스트로 받으면 표기가
+  // 제각각(예: "1/2/3인실" vs "1.2.3인실") 저장되는 문제가 있었다 —
+  // 인실 유형별 개수를 각각 입력받아 서버가 표준 포맷 문자열로 조합한다.
+  const room1Input = document.getElementById("f-room-1");
+  const room2Input = document.getElementById("f-room-2");
+  const room3Input = document.getElementById("f-room-3");
   const participantsFieldEl = document.getElementById("participants-field");
   const participantsEl = document.getElementById("f-participants");
 
@@ -40,13 +46,22 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function applyCategoryUI() {
-    const needsVehicle = categorySel.value === "유류비" || categorySel.value === "정비";
+    // I-059(2026-08-16): 통행료 지출도 차량번호를 받아야 차량월별현황의
+    // 차량지출 집계에 반영된다 — 이전엔 유류비/정비만 노출해 통행료가
+    // 항상 차량번호 없이 저장되고, 집계 로직이 차량번호 없는 행을 통째로
+    // 건너뛰어(refreshVehicleMonthlySummary_) 통행료 지출이 차량지출
+    // 섹션에서 전부 누락되는 버그가 있었다.
+    const needsVehicle = categorySel.value === "유류비" || categorySel.value === "정비" || categorySel.value === "통행료";
     vehicleFieldEl.classList.toggle("hidden", !needsVehicle);
     if (!needsVehicle) vehicleSel.value = "";
 
     const needsRoomType = categorySel.value === "숙박";
     roomTypeFieldEl.classList.toggle("hidden", !needsRoomType);
-    if (!needsRoomType) roomTypeInput.value = "";
+    if (!needsRoomType) {
+      room1Input.value = "0";
+      room2Input.value = "0";
+      room3Input.value = "0";
+    }
 
     const needsParticipants = categorySel.value === "식비" || categorySel.value === "숙박";
     participantsFieldEl.classList.toggle("hidden", !needsParticipants);
@@ -111,7 +126,12 @@ document.addEventListener("DOMContentLoaded", () => {
       photoMime: photoMime,
       // I-023(2026-08-09): 식비/숙박이고 함께한 인원이 2명 이상이면 서버가 이
       // 영수증을 식대지출(I-036)/숙박예약 시트에도 균등분배로 함께 기록한다.
-      roomType: roomTypeInput.value,
+      // I-058(2026-08-16): 방타입은 인실 유형별 개수로 보내고, 서버가 표준
+      // 포맷 문자열("2인실 3개, 3인실 2개")로 조합해 저장한다 — 프론트가
+      // 자유텍스트를 직접 조합하지 않아 표기가 흔들릴 여지가 없다.
+      roomType1: Number(room1Input.value) || 0,
+      roomType2: Number(room2Input.value) || 0,
+      roomType3: Number(room3Input.value) || 0,
       participants: (category === "식비" || category === "숙박") ? participants : [],
     };
 
