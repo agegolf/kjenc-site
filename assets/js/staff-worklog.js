@@ -86,6 +86,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // I-061(2026-08-21): 현장명/거래처는 자유텍스트로 입력돼 같은 현장이
+  // "GM 창원 현장"/"GM창원현장(미래이앤씨)"처럼 다르게 표기되던 문제가 있었다 —
+  // 방타입(I-058)/차량번호(I-051)와 동일하게 서버(현장목록/거래처목록 시트)
+  // 표준 목록을 드롭다운으로 노출하고, "직접입력"을 고르면 숨겨진 기존
+  // #f-site/#f-client input이 나타나 새 값을 받는다. 실제 제출 payload는
+  // 계속 #f-site/#f-client의 값을 그대로 쓰므로(draft 저장/복원, 현장 미리보기
+  // 조회 등 기존 로직을 전혀 건드리지 않아도 됨) — select는 그 두 input에
+  // 값을 채워 넣는 프론트 전용 UI일 뿐이다.
+  function setupStandardListSelect(selectEl, hiddenInputEl, apiAction, listKey) {
+    function applySelection() {
+      if (selectEl.value === "__custom__") {
+        hiddenInputEl.classList.remove("hidden");
+        hiddenInputEl.value = "";
+        hiddenInputEl.focus();
+      } else {
+        hiddenInputEl.classList.add("hidden");
+        hiddenInputEl.value = selectEl.value;
+      }
+      hiddenInputEl.dispatchEvent(new Event("input"));
+    }
+    selectEl.addEventListener("change", () => { applySelection(); saveDraft(); });
+    staffApiCall(apiAction, {}).then((result) => {
+      if (!result.ok || !result[listKey]) return;
+      const options = result[listKey]
+        .map((name) => `<option value="${name}">${name}</option>`)
+        .join("");
+      selectEl.innerHTML = `<option value="">선택해주세요</option>${options}<option value="__custom__">직접입력(신규 현장/거래처)</option>`;
+      // draft 복원이 hiddenInputEl.value를 먼저 채워둔 경우, 그 값이 표준
+      // 목록에 있으면 select도 맞춰준다(없으면 직접입력 상태 유지).
+      if (hiddenInputEl.value && result[listKey].indexOf(hiddenInputEl.value) !== -1) {
+        selectEl.value = hiddenInputEl.value;
+        hiddenInputEl.classList.add("hidden");
+      } else if (hiddenInputEl.value) {
+        selectEl.value = "__custom__";
+        hiddenInputEl.classList.remove("hidden");
+      }
+    });
+  }
+  setupStandardListSelect(
+    document.getElementById("f-site-select"), document.getElementById("f-site"), "getSites", "sites"
+  );
+  setupStandardListSelect(
+    document.getElementById("f-client-select"), document.getElementById("f-client"), "getClients", "clients"
+  );
+
   // I-012(2026-08-05): 근무자가 이동방법="회사차"를 고르면 어떤 차를 썼는지 선택할 수
   // 있어야 한다. 차량목록은 프론트에 하드코딩하지 않고 서버(차량목록 시트)에서 가져온다
   // — receipts.html의 getVehicles 패턴과 동일. 차량이동로그(I-014)의 차량 선택도 같은
@@ -469,6 +514,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   siteInput.addEventListener("blur", checkExistingWorklog);
   dateInput.addEventListener("change", checkExistingWorklog);
+  // I-061(2026-08-21): 현장명을 드롭다운으로 고른 경우 blur가 발생하지
+  // 않으므로(직접입력 input이 아니라 select 조작), select 변경 시에도
+  // 같은 미리보기 조회를 트리거한다.
+  document.getElementById("f-site-select").addEventListener("change", checkExistingWorklog);
 
   addBtn.addEventListener("click", () => { addWorkerRow(); saveDraft(); });
   addVehicleLogBtn.addEventListener("click", () => { addVehicleLogGroup(); saveDraft(); });

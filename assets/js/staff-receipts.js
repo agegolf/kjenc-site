@@ -45,6 +45,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // I-061(2026-08-21): 현장명도 방타입/차량번호와 동일하게 표준 목록
+  // 드롭다운 + "직접입력"으로 전환한다(worklog.js의 setupStandardListSelect와
+  // 동일한 패턴 — #f-site는 계속 최종 제출값을 담는 hidden input 역할).
+  const siteSelectEl = document.getElementById("f-site-select");
+  const siteInputEl = document.getElementById("f-site");
+  siteSelectEl.addEventListener("change", () => {
+    if (siteSelectEl.value === "__custom__") {
+      siteInputEl.classList.remove("hidden");
+      siteInputEl.value = "";
+      siteInputEl.focus();
+    } else {
+      siteInputEl.classList.add("hidden");
+      siteInputEl.value = siteSelectEl.value;
+    }
+  });
+  staffApiCall("getSites", {}).then((result) => {
+    if (!result.ok || !result.sites) return;
+    const options = result.sites.map((name) => `<option value="${name}">${name}</option>`).join("");
+    siteSelectEl.innerHTML = `<option value="">선택해주세요</option>${options}<option value="__custom__">직접입력(신규 현장)</option>`;
+  });
+
   // I-045(2026-08-17): 폼을 신규 등록/수정 겸용으로 쓴다. editingTimestamp가
   // null이면 신규 등록(saveReceipt), 값이 있으면 그 영수증의 수정(updateReceipt) —
   // 서버는 등록일시(timestamp)를 물리적 행 번호 대신 식별자로 써서(중간 삭제로
@@ -56,7 +77,18 @@ document.addEventListener("DOMContentLoaded", () => {
   function enterEditMode(r) {
     editingTimestamp = r.timestamp;
     document.getElementById("f-date").value = r.date;
-    document.getElementById("f-site").value = r.site || "";
+    // I-061(2026-08-21): 현장명이 표준 목록에 있으면 select를 그 값으로
+    // 맞추고 직접입력 input은 숨긴다 — 없으면(과거 자유텍스트로 저장된
+    // 현장 등) "직접입력" 상태로 두고 그 값을 그대로 보여준다.
+    const siteOptionExists = Array.from(siteSelectEl.options).some((o) => o.value === (r.site || ""));
+    if (siteOptionExists) {
+      siteSelectEl.value = r.site || "";
+      siteInputEl.classList.add("hidden");
+    } else {
+      siteSelectEl.value = "__custom__";
+      siteInputEl.classList.remove("hidden");
+    }
+    siteInputEl.value = r.site || "";
     categorySel.value = r.category;
     document.getElementById("f-amount").value = r.amount;
     document.getElementById("f-payment").value = r.paymentMethod || "";

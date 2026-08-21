@@ -42,11 +42,13 @@
     <div class="grid sm:grid-cols-2 gap-4">
       <div>
         <label class="staff-label">현장명</label>
-        <input type="text" id="f-site" class="staff-input" placeholder="예: 안산현장">
+        <select id="f-site-select" class="staff-select"></select>
+        <input type="text" id="f-site" class="staff-input hidden mt-2" placeholder="새 현장명 직접입력">
       </div>
       <div>
         <label class="staff-label">거래처 (필수)</label>
-        <input type="text" id="f-client" class="staff-input" placeholder="예: 미래이앤시" required>
+        <select id="f-client-select" class="staff-select"></select>
+        <input type="text" id="f-client" class="staff-input hidden mt-2" placeholder="새 거래처 직접입력" required>
       </div>
     </div>
 
