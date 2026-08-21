@@ -101,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderDuplicateItem(s) {
     const node = dupTemplate.content.cloneNode(true);
+    const card = node.querySelector(".staff-card");
     node.querySelector(".d-type").textContent = s.type;
     node.querySelector(".d-date").textContent = s.date;
     node.querySelector(".d-overlap").textContent = s.overlapNames.join(", ");
@@ -112,7 +113,35 @@ document.addEventListener("DOMContentLoaded", () => {
     if (s.photoUrlA) { photoA.href = s.photoUrlA; photoA.classList.remove("hidden"); }
     const photoB = node.querySelector(".d-photoB");
     if (s.photoUrlB) { photoB.href = s.photoUrlB; photoB.classList.remove("hidden"); }
+
+    // I-045(2026-08-17): "행 A/B 그룹 삭제" — getDuplicateSuspects가 준 대표
+    // 행(rowA/rowB)을 서버(handleDeleteDuplicateGroup_)로 넘기면, 같은
+    // (날짜,결제금액) 그룹에 속한 참가자 전원의 행을 한꺼번에 지운다(참가자
+    // 1명당 1행 구조라 대표 행 하나만 지우면 나머지가 고아로 남기 때문).
+    node.querySelector(".d-delete-a").addEventListener("click", (e) => deleteDuplicateGroup(s.type, s.rowA, card, e.target));
+    node.querySelector(".d-delete-b").addEventListener("click", (e) => deleteDuplicateGroup(s.type, s.rowB, card, e.target));
+
     dupListEl.appendChild(node);
+  }
+
+  async function deleteDuplicateGroup(type, row, cardEl, btnEl) {
+    if (!window.confirm("이 그룹(같은 날짜+금액의 참가자 전원 행)을 전부 삭제하시겠습니까? 되돌릴 수 없습니다.")) return;
+    const buttons = cardEl.querySelectorAll("button");
+    buttons.forEach((b) => (b.disabled = true));
+    btnEl.textContent = "삭제 중...";
+
+    const result = await staffApiCall("deleteDuplicateGroup", {
+      name: session.name, pin: session.pin, type: type, row: row,
+    });
+
+    if (result.ok) {
+      cardEl.remove();
+      if (!dupListEl.querySelector(".staff-card")) dupEmptyEl.classList.remove("hidden");
+      showMsg((result.deletedRows || 0) + "건 삭제되었습니다.", false);
+    } else {
+      buttons.forEach((b) => (b.disabled = false));
+      showMsg(result.message || "삭제에 실패했습니다.", true);
+    }
   }
 
   loadPending();

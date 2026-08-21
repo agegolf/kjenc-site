@@ -47,7 +47,11 @@
         <a href="#" target="_blank" rel="noopener" class="d-photoB text-blue-600 underline hidden">사진 보기</a>
       </div>
     </div>
-    <p class="text-xs text-gray-400 mt-2">중복이 확인되면 구글시트에서 해당 시트의 중복 행을 직접 삭제해주세요.</p>
+    <div class="flex gap-2 mt-3">
+      <button type="button" class="d-delete-a text-xs px-3 py-1 rounded border border-red-300 text-red-500">행 A 그룹 삭제</button>
+      <button type="button" class="d-delete-b text-xs px-3 py-1 rounded border border-red-300 text-red-500">행 B 그룹 삭제</button>
+    </div>
+    <p class="text-xs text-gray-400 mt-2">"그룹 삭제"는 그 날짜+금액으로 묶인 참가자 전원의 행을 한 번에 지웁니다(개별 참가자만 지울 수 없음, 되돌릴 수 없음).</p>
   </div>
 </template>
 

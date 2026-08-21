@@ -45,6 +45,50 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // I-045(2026-08-17): 폼을 신규 등록/수정 겸용으로 쓴다. editingTimestamp가
+  // null이면 신규 등록(saveReceipt), 값이 있으면 그 영수증의 수정(updateReceipt) —
+  // 서버는 등록일시(timestamp)를 물리적 행 번호 대신 식별자로 써서(중간 삭제로
+  // 행 번호가 밀려도 안전하게) 대상을 다시 찾는다.
+  let editingTimestamp = null;
+  const submitBtn = document.getElementById("receipt-submit-btn");
+  const cancelEditBtn = document.getElementById("receipt-cancel-edit-btn");
+
+  function enterEditMode(r) {
+    editingTimestamp = r.timestamp;
+    document.getElementById("f-date").value = r.date;
+    document.getElementById("f-site").value = r.site || "";
+    categorySel.value = r.category;
+    document.getElementById("f-amount").value = r.amount;
+    document.getElementById("f-payment").value = r.paymentMethod || "";
+    document.getElementById("f-memo").value = r.memo || "";
+    applyCategoryUI();
+    if (r.vehicleNumber) vehicleSel.value = r.vehicleNumber;
+    submitBtn.textContent = "수정 저장";
+    cancelEditBtn.classList.remove("hidden");
+    // I-045(2026-08-17): 참가자 목록/방타입 인실개수는 원본 영수증 조회 응답에
+    // 포함돼 있지 않다(getMyReceipts는 영수증 시트 자체 컬럼만 반환) — 식비/
+    // 숙박이면 다시 선택하도록 안내한다. 그대로 저장하면 참가자를 새로 고른
+    // 값(기본값: 본인만 체크)으로 연동 데이터가 재생성되므로, 원래 인원 그대로
+    // 유지하려면 사용자가 직접 다시 체크해야 한다.
+    if (r.category === "식비" || r.category === "숙박") {
+      msgEl.textContent = "함께한 인원" + (r.category === "숙박" ? "과 방타입은" : "은") +
+        " 자동으로 불러오지 못합니다 — 원래대로 유지하려면 다시 선택해주세요.";
+      msgEl.classList.add("staff-msg-error");
+      msgEl.classList.remove("hidden");
+    }
+    window.scrollTo({ top: form.offsetTop - 20, behavior: "smooth" });
+  }
+
+  function exitEditMode() {
+    editingTimestamp = null;
+    form.reset();
+    document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+    applyCategoryUI();
+    submitBtn.textContent = "영수증 등록";
+    cancelEditBtn.classList.add("hidden");
+  }
+  cancelEditBtn.addEventListener("click", exitEditMode);
+
   function applyCategoryUI() {
     // I-059(2026-08-16): 통행료 지출도 차량번호를 받아야 차량월별현황의
     // 차량지출 집계에 반영된다 — 이전엔 유류비/정비만 노출해 통행료가
@@ -135,45 +179,111 @@ document.addEventListener("DOMContentLoaded", () => {
       participants: (category === "식비" || category === "숙박") ? participants : [],
     };
 
-    const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
-    submitBtn.textContent = "업로드 중...";
+    const isEditing = !!editingTimestamp;
+    submitBtn.textContent = isEditing ? "수정 저장 중..." : "업로드 중...";
 
-    let result = await staffApiCall("saveReceipt", payload);
-
-    // I-031(2026-08-15): 서버가 참가자 겹침+금액 유사로 "이미 등록된 것 같다"고
-    // 판단하면 needsConfirm과 함께 저장을 거부한다 — 사용자에게 확인받고
-    // "그래도 등록"을 고르면 같은 payload에 forceSubmit만 추가해 재요청한다
-    // (사진은 이미 base64로 변환해 payload에 있으므로 다시 첨부할 필요 없음).
-    if (!result.ok && result.needsConfirm) {
-      const confirmed = window.confirm(result.message);
-      if (confirmed) {
-        payload.forceSubmit = true;
-        result = await staffApiCall("saveReceipt", payload);
-      } else {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "영수증 등록";
-        msgEl.textContent = "등록을 취소했습니다.";
-        msgEl.classList.add("staff-msg-error");
-        msgEl.classList.remove("hidden");
-        return;
+    let result;
+    if (isEditing) {
+      // I-045(2026-08-17): 수정은 사진을 다시 첨부하지 않으면 기존 사진 URL을
+      // 그대로 유지해야 하므로, photoBase64가 없을 때만 그렇게 서버가 처리한다
+      // (handleUpdateReceipt_가 payload.photoBase64 유무로 분기).
+      payload.timestamp = editingTimestamp;
+      result = await staffApiCall("updateReceipt", payload);
+    } else {
+      result = await staffApiCall("saveReceipt", payload);
+      // I-031(2026-08-15): 서버가 참가자 겹침+금액 유사로 "이미 등록된 것 같다"고
+      // 판단하면 needsConfirm과 함께 저장을 거부한다 — 사용자에게 확인받고
+      // "그래도 등록"을 고르면 같은 payload에 forceSubmit만 추가해 재요청한다
+      // (사진은 이미 base64로 변환해 payload에 있으므로 다시 첨부할 필요 없음).
+      if (!result.ok && result.needsConfirm) {
+        const confirmed = window.confirm(result.message);
+        if (confirmed) {
+          payload.forceSubmit = true;
+          result = await staffApiCall("saveReceipt", payload);
+        } else {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "영수증 등록";
+          msgEl.textContent = "등록을 취소했습니다.";
+          msgEl.classList.add("staff-msg-error");
+          msgEl.classList.remove("hidden");
+          return;
+        }
       }
     }
 
     submitBtn.disabled = false;
-    submitBtn.textContent = "영수증 등록";
 
     if (result.ok) {
-      msgEl.textContent = "영수증이 등록되었습니다.";
+      msgEl.textContent = isEditing ? "영수증이 수정되었습니다." : "영수증이 등록되었습니다.";
+      if (result.warning) msgEl.textContent += " (" + result.warning + ")";
       msgEl.classList.add("staff-msg-success");
       msgEl.classList.remove("hidden");
-      form.reset();
-      document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
-      applyCategoryUI();
+      exitEditMode();
+      loadMyReceipts();
     } else {
-      msgEl.textContent = result.message || "등록에 실패했습니다. 잠시 후 다시 시도해주세요.";
+      submitBtn.textContent = isEditing ? "수정 저장" : "영수증 등록";
+      msgEl.textContent = result.message || "처리에 실패했습니다. 잠시 후 다시 시도해주세요.";
       msgEl.classList.add("staff-msg-error");
       msgEl.classList.remove("hidden");
     }
   });
+
+  // ============ 내 제출 내역 (I-045, 2026-08-17) ============
+  const myListEl = document.getElementById("my-receipts-list");
+  const myEmptyEl = document.getElementById("my-receipts-empty");
+  const itemTemplate = document.getElementById("my-receipt-item-template");
+
+  async function loadMyReceipts() {
+    const result = await staffApiCall("getMyReceipts", { name: session.name, pin: session.pin });
+    myListEl.innerHTML = "";
+    if (!result.ok || !result.receipts || result.receipts.length === 0) {
+      myEmptyEl.classList.remove("hidden");
+      return;
+    }
+    myEmptyEl.classList.add("hidden");
+    result.receipts.forEach((r) => renderMyReceiptItem(r));
+  }
+
+  function renderMyReceiptItem(r) {
+    const node = itemTemplate.content.cloneNode(true);
+    node.querySelector(".r-category").textContent = r.category;
+    node.querySelector(".r-date").textContent = r.date;
+    node.querySelector(".r-site").textContent = r.site || "";
+    node.querySelector(".r-amount").textContent = Number(r.amount).toLocaleString() + "원";
+    node.querySelector(".r-payment").textContent = r.paymentMethod || "";
+    const statusEl = node.querySelector(".r-status");
+    statusEl.textContent = r.status;
+    if (r.status === "승인") statusEl.classList.add("bg-green-100", "text-green-700");
+    else if (r.status === "반려") statusEl.classList.add("bg-red-100", "text-red-700");
+
+    if (r.editHistory) {
+      const historyEl = node.querySelector(".r-history");
+      historyEl.textContent = "수정 이력: " + r.editHistory;
+      historyEl.classList.remove("hidden");
+    }
+
+    node.querySelector(".r-edit-btn").addEventListener("click", () => enterEditMode(r));
+    node.querySelector(".r-delete-btn").addEventListener("click", async (e) => {
+      if (!window.confirm("이 영수증을 삭제하시겠습니까? 되돌릴 수 없습니다.")) return;
+      const btn = e.target;
+      btn.disabled = true;
+      btn.textContent = "삭제 중...";
+      const result = await staffApiCall("deleteReceipt", {
+        name: session.name, pin: session.pin, timestamp: r.timestamp,
+      });
+      if (result.ok) {
+        if (result.warning) window.alert(result.warning);
+        loadMyReceipts();
+      } else {
+        btn.disabled = false;
+        btn.textContent = "삭제";
+        window.alert(result.message || "삭제에 실패했습니다.");
+      }
+    });
+
+    myListEl.appendChild(node);
+  }
+
+  loadMyReceipts();
 });
