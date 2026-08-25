@@ -97,16 +97,27 @@ document.addEventListener("DOMContentLoaded", () => {
     if (r.vehicleNumber) vehicleSel.value = r.vehicleNumber;
     submitBtn.textContent = "수정 저장";
     cancelEditBtn.classList.remove("hidden");
-    // I-045(2026-08-17): 참가자 목록/방타입 인실개수는 원본 영수증 조회 응답에
-    // 포함돼 있지 않다(getMyReceipts는 영수증 시트 자체 컬럼만 반환) — 식비/
-    // 숙박이면 다시 선택하도록 안내한다. 그대로 저장하면 참가자를 새로 고른
-    // 값(기본값: 본인만 체크)으로 연동 데이터가 재생성되므로, 원래 인원 그대로
-    // 유지하려면 사용자가 직접 다시 체크해야 한다.
+    // I-062 후속 버그 수정(2026-08-24, 사용자 발견 — "영수증 재업로드 문제"):
+    // 예전엔 참가자 체크박스가 자동 복원되지 않아, 사용자가 수정 모드로
+    // 들어가 그대로 저장하면 기존 식대지출/숙박예약 연동 데이터가 조용히
+    // 삭제되는 사고가 있었다(경고는 있었지만 폼 위쪽 텍스트라 놓치기 쉬움,
+    // 실제 재현 테스트로 확인). handleGetMyReceipts_가 이제 연결키로 기존
+    // 참가자 목록을 역조회해 r.participants로 함께 돌려주므로, 그 값으로
+    // 체크박스를 자동 복원한다 — 사용자가 다시 체크할 필요가 없다.
     if (r.category === "식비" || r.category === "숙박") {
-      msgEl.textContent = "함께한 인원" + (r.category === "숙박" ? "과 방타입은" : "은") +
-        " 자동으로 불러오지 못합니다 — 원래대로 유지하려면 다시 선택해주세요.";
-      msgEl.classList.add("staff-msg-error");
-      msgEl.classList.remove("hidden");
+      const linkedParticipants = r.participants || [];
+      participantsEl.querySelectorAll(".f-participant-check").forEach((el) => {
+        el.checked = linkedParticipants.includes(el.value);
+      });
+      if (linkedParticipants.length === 0) {
+        // 연결키가 없는 과거 건(I-045 이전 데이터) — 자동 복원이 불가능하므로
+        // 여전히 안내가 필요하다.
+        msgEl.textContent = "이 영수증은 과거 건이라 함께한 인원" +
+          (r.category === "숙박" ? "과 방타입을" : "을") +
+          " 자동으로 불러오지 못했습니다 — 원래대로 유지하려면 다시 선택해주세요.";
+        msgEl.classList.add("staff-msg-error");
+        msgEl.classList.remove("hidden");
+      }
     }
     window.scrollTo({ top: form.offsetTop - 20, behavior: "smooth" });
   }
