@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>휴무·휴가 등록 | 케이제이ENC</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/staff.css">
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body class="bg-white text-[color:var(--kjenc-navy-900)]">
+<header class="staff-header">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="index.html" class="font-semibold hover:underline">&larr; 케이제이ENC 직원 페이지</a>
+    <div class="text-sm flex items-center gap-3">
+      <span><span id="session-name"></span>님</span>
+      <button onclick="staffLogout()" class="text-gray-300 underline">로그아웃</button>
+    </div>
+  </div>
+</header>
+
+<div class="staff-shell">
+  <h1 class="text-xl font-bold mb-1">휴무·휴가 등록</h1>
+  <p class="text-sm text-gray-500 mb-6">오늘 현장에 못 나갔을 때 — 휴가/병가/개인사유/기타를 등록합니다. 하루씩만 등록할 수 있어요(여러 날이면 날짜를 바꿔 여러 번 제출해주세요).</p>
+
+  <form id="leave-form" class="staff-card space-y-5">
+    <div>
+      <label class="staff-label">이름</label>
+      <input type="text" id="f-name" class="staff-input" disabled>
+    </div>
+
+    <div>
+      <label class="staff-label">날짜</label>
+      <input type="date" id="f-date" class="staff-input">
+    </div>
+
+    <div>
+      <label class="staff-label">사유</label>
+      <select id="f-reason" class="staff-select" required>
+        <option value="">선택해주세요</option>
+        <option value="휴가">휴가</option>
+        <option value="병가">병가</option>
+        <option value="개인사유">개인사유</option>
+        <option value="기타">기타</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="staff-label">메모 (선택)</label>
+      <input type="text" id="f-memo" class="staff-input" placeholder="예: 가족 경조사">
+    </div>
+
+    <p class="text-xs text-gray-400">
+      등록 후에는 본인이 직접 수정·취소할 수 없습니다. 잘못 등록했다면 관리자에게 시트에서 삭제를 요청해주세요.
+    </p>
+
+    <p id="leave-msg" class="staff-msg hidden"></p>
+    <button type="submit" class="btn-cta w-full py-3 rounded font-semibold" id="leave-submit-btn">등록</button>
+  </form>
+</div>
+
+<script src="../assets/js/staff-config.js"></script>
+<script src="../assets/js/staff-leave.js"></script>
+</body>
+</html>
