@@ -9,13 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const rowsEl = document.getElementById("worker-rows");
   const addBtn = document.getElementById("add-worker-btn");
-  const vehicleLogEl = document.getElementById("vehicle-logs");
-  const addVehicleLogBtn = document.getElementById("add-vehiclelog-btn");
   const form = document.getElementById("worklog-form");
   const msgEl = document.getElementById("worklog-msg");
 
   // 새로고침 시 입력 내용 유지(사용자 요청, 2026-08-08): 폼 전체(날짜/현장명/작업내용
-  // 등 기본 필드 + 근무자/숙박/식사/차량이동 그룹의 텍스트·숫자·선택값)를 매 입력마다
+  // 등 기본 필드 + 근무자 그룹의 텍스트·숫자·선택값)를 매 입력마다
   // localStorage에 저장해두고, 페이지 로드 시 복원한다. 사진(File 객체)은 브라우저
   // 보안 정책상 localStorage에 저장할 수 없어 복원 대상에서 제외 — 새로고침 후에는
   // 다시 첨부해야 한다(각 첨부란에 안내 문구 추가).
@@ -44,21 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
         extraManual: group.querySelector(".w-extra-hours").dataset.manual === "true",
         overtimeHours: group.querySelector(".w-overtime-hours").value,
       })),
-      vehicleLogs: Array.from(vehicleLogEl.querySelectorAll(".staff-lodging-group")).map((group) => {
-        const dh = group.querySelector(".v-depart-h").value;
-        const dm = group.querySelector(".v-depart-m").value;
-        const ah = group.querySelector(".v-arrive-h").value;
-        const am = group.querySelector(".v-arrive-m").value;
-        return {
-          vehicleNumber: group.querySelector(".v-vehicle").value,
-          driver: group.querySelector(".v-driver").value,
-          fromSite: group.querySelector(".v-from").value,
-          toSite: group.querySelector(".v-to").value,
-          departTime: (dh && dm) ? `${dh}:${dm}` : "",
-          arriveTime: (ah && am) ? `${ah}:${am}` : "",
-          memo: group.querySelector(".v-memo").value,
-        };
-      }),
     };
   }
 
@@ -133,15 +116,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // I-012(2026-08-05): 근무자가 이동방법="회사차"를 고르면 어떤 차를 썼는지 선택할 수
   // 있어야 한다. 차량목록은 프론트에 하드코딩하지 않고 서버(차량목록 시트)에서 가져온다
-  // — receipts.html의 getVehicles 패턴과 동일. 차량이동로그(I-014)의 차량 선택도 같은
-  // 목록을 재사용한다.
+  // — receipts.html의 getVehicles 패턴과 동일.
   let vehicleOptionsHtml = `<option value="">차량 선택</option>`;
   staffApiCall("getVehicles", {}).then((result) => {
     if (result.ok && result.vehicles) {
       vehicleOptionsHtml += result.vehicles
         .map((v) => `<option value="${v.no}">${v.no}${v.type ? " (" + v.type + ")" : ""}</option>`)
         .join("");
-      document.querySelectorAll(".w-vehicle, .v-vehicle").forEach((sel) => {
+      document.querySelectorAll(".w-vehicle").forEach((sel) => {
         const current = sel.value;
         sel.innerHTML = vehicleOptionsHtml;
         sel.value = current;
@@ -410,57 +392,6 @@ document.addEventListener("DOMContentLoaded", () => {
     rowsEl.appendChild(group);
   }
 
-  // 차량이동로그(I-014 2026-08-06 신규): 오늘 사용한 차량이 현장 간 어떻게 이동했는지
-  // 기록한다. 지원금 계산과 무관한 순수 기록용이라 숙박/식대지출처럼 인원수 분배 계산은
-  // 필요 없다 — 차량번호/출발지/도착지/시각/운전자만 받는다.
-  function addVehicleLogGroup(saved) {
-    saved = saved || {};
-    const group = document.createElement("div");
-    group.className = "staff-lodging-group";
-    group.innerHTML = `
-      <div class="staff-lodging-group-head">
-        <select class="staff-select v-vehicle">${vehicleOptionsHtml}</select>
-        <select class="staff-select v-driver">${nameOptions(saved.driver || "")}</select>
-        <button type="button" class="staff-remove-btn v-remove">삭제</button>
-      </div>
-      <div class="staff-lodging-group-head">
-        <input type="text" class="v-from" placeholder="출발지(현장명)" value="${(saved.fromSite || "").replace(/"/g, "&quot;")}">
-        <input type="text" class="v-to" placeholder="도착지(현장명)" value="${(saved.toSite || "").replace(/"/g, "&quot;")}">
-      </div>
-      <div class="staff-lodging-group-head">
-        <span class="v-depart-picker"></span>
-        <span>→</span>
-        <span class="v-arrive-picker"></span>
-      </div>
-      <input type="text" class="l-roomtype v-memo" placeholder="비고 (선택)" value="${(saved.memo || "").replace(/"/g, "&quot;")}">
-    `;
-    group.querySelector(".v-depart-picker").outerHTML = optionalTimePickerHtml(
-      "v-depart-h", "v-depart-m"
-    );
-    group.querySelector(".v-arrive-picker").outerHTML = optionalTimePickerHtml(
-      "v-arrive-h", "v-arrive-m"
-    );
-    if (saved.vehicleNumber) group.querySelector(".v-vehicle").value = saved.vehicleNumber;
-    if (saved.departTime) {
-      const [h, m] = saved.departTime.split(":");
-      group.querySelector(".v-depart-h").value = h || "";
-      group.querySelector(".v-depart-m").value = m || "";
-    }
-    if (saved.arriveTime) {
-      const [h, m] = saved.arriveTime.split(":");
-      group.querySelector(".v-arrive-h").value = h || "";
-      group.querySelector(".v-arrive-m").value = m || "";
-    }
-
-    group.querySelector(".v-remove").addEventListener("click", () => {
-      group.remove();
-      saveDraft();
-    });
-    group.addEventListener("input", saveDraft);
-    group.addEventListener("change", saveDraft);
-    vehicleLogEl.appendChild(group);
-  }
-
   // I-015(2026-08-08): 날짜+현장명이 같은 날 이미 제출된 업무일지가 있으면 그 작업내용/
   // 근무인원을 미리 보여주고, "그대로 사용" 또는 "새로 작성" 중 선택하게 한다. 저장 시점에
   // 서버가 실제 병합을 처리하므로(findExistingWorklog_/mergeWorkContent_), 이 조회는 순수
@@ -520,7 +451,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("f-site-select").addEventListener("change", checkExistingWorklog);
 
   addBtn.addEventListener("click", () => { addWorkerRow(); saveDraft(); });
-  addVehicleLogBtn.addEventListener("click", () => { addVehicleLogGroup(); saveDraft(); });
 
   // 기본 필드(날짜/현장명/구분/거래처/작업내용)도 변경 시 초안 저장.
   document.getElementById("f-site-type").addEventListener("change", saveDraft);
@@ -530,7 +460,7 @@ document.addEventListener("DOMContentLoaded", () => {
   dateInput.addEventListener("input", saveDraft);
 
   // 새로고침 복원(사용자 요청, 2026-08-08): 저장된 초안이 있으면 폼을 그 값으로
-  // 채운다. 동적 그룹(근무자/숙박/식사/차량이동)은 저장된 개수만큼 각 add*Group
+  // 채운다. 동적 그룹(근무자/숙박/식사)은 저장된 개수만큼 각 add*Group
   // 함수를 호출해 값과 함께 재생성한다 — 없으면 기존처럼 근무자 1행만 기본 추가.
   draftRestoring = true;
   const draft = loadDraft();
@@ -541,7 +471,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (draft.client) document.getElementById("f-client").value = draft.client;
     if (draft.workContent) contentInput.value = draft.workContent;
     (draft.workers && draft.workers.length > 0 ? draft.workers : [null]).forEach((w) => addWorkerRow(w || undefined));
-    (draft.vehicleLogs || []).forEach((v) => addVehicleLogGroup(v));
     msgEl.textContent = "이전에 작성 중이던 내용을 불러왔습니다. 사진 첨부는 다시 해주세요.";
     msgEl.classList.add("staff-msg-success");
     msgEl.classList.remove("hidden");
@@ -632,25 +561,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 차량이동로그(I-014 2026-08-06): 차량번호가 선택된 행만 저장 대상으로 삼는다.
-    const vehicleLogs = Array.from(vehicleLogEl.querySelectorAll(".staff-lodging-group"))
-      .map((group) => {
-        const departH = group.querySelector(".v-depart-h").value;
-        const departM = group.querySelector(".v-depart-m").value;
-        const arriveH = group.querySelector(".v-arrive-h").value;
-        const arriveM = group.querySelector(".v-arrive-m").value;
-        return {
-          vehicleNumber: group.querySelector(".v-vehicle").value,
-          driver: group.querySelector(".v-driver").value,
-          fromSite: group.querySelector(".v-from").value,
-          toSite: group.querySelector(".v-to").value,
-          departTime: (departH && departM) ? `${departH}:${departM}` : "",
-          arriveTime: (arriveH && arriveM) ? `${arriveH}:${arriveM}` : "",
-          memo: group.querySelector(".v-memo").value,
-        };
-      })
-      .filter((l) => l.vehicleNumber);
-
     const payload = {
       reporter: session.name,
       pin: session.pin,
@@ -660,7 +570,6 @@ document.addEventListener("DOMContentLoaded", () => {
       client: document.getElementById("f-client").value,
       workContent: document.getElementById("f-content").value,
       workers: workers,
-      vehicleLogs: vehicleLogs,
     };
 
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -683,7 +592,6 @@ document.addEventListener("DOMContentLoaded", () => {
       dateInput.value = new Date().toISOString().slice(0, 10);
       rowsEl.innerHTML = "";
       addWorkerRow();
-      vehicleLogEl.innerHTML = "";
       renderExistingCard(false);
     } else {
       msgEl.textContent = result.message || "저장에 실패했습니다. 잠시 후 다시 시도해주세요.";
