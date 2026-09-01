@@ -18,6 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const room1Input = document.getElementById("f-room-1");
   const room2Input = document.getElementById("f-room-2");
   const room3Input = document.getElementById("f-room-3");
+  // I-064(2026-08-31): 항목분류="정비"일 때만 주행거리/정비유형을 받는다 —
+  // 차량월별현황의 엔진오일 교환 경고 계산에 쓰인다.
+  const maintenanceFieldEl = document.getElementById("maintenance-field");
+  const mileageInput = document.getElementById("f-mileage");
+  const maintenanceTypeSel = document.getElementById("f-maintenance-type");
   const participantsFieldEl = document.getElementById("participants-field");
   const participantsEl = document.getElementById("f-participants");
 
@@ -95,6 +100,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("f-memo").value = r.memo || "";
     applyCategoryUI();
     if (r.vehicleNumber) vehicleSel.value = r.vehicleNumber;
+    // I-064(2026-08-31): 정비 항목 자가수정 시 주행거리/정비유형 기존값 복원.
+    if (r.category === "정비") {
+      mileageInput.value = r.mileage || "";
+      maintenanceTypeSel.value = r.maintenanceType || "";
+    }
     submitBtn.textContent = "수정 저장";
     cancelEditBtn.classList.remove("hidden");
     // I-062 후속 버그 수정(2026-08-24, 사용자 발견 — "영수증 재업로드 문제"):
@@ -150,6 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
       room3Input.value = "0";
     }
 
+    const needsMaintenance = categorySel.value === "정비";
+    maintenanceFieldEl.classList.toggle("hidden", !needsMaintenance);
+    if (!needsMaintenance) {
+      mileageInput.value = "";
+      maintenanceTypeSel.value = "";
+    }
+
     const needsParticipants = categorySel.value === "식비" || categorySel.value === "숙박";
     participantsFieldEl.classList.toggle("hidden", !needsParticipants);
   }
@@ -177,6 +194,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (!paymentMethod) {
       msgEl.textContent = "결제수단을 선택해주세요.";
+      msgEl.classList.add("staff-msg-error");
+      msgEl.classList.remove("hidden");
+      return;
+    }
+    if (category === "정비" && (!mileageInput.value || !maintenanceTypeSel.value)) {
+      msgEl.textContent = "정비 항목은 주행거리와 정비유형을 입력해주세요.";
       msgEl.classList.add("staff-msg-error");
       msgEl.classList.remove("hidden");
       return;
@@ -220,6 +243,11 @@ document.addEventListener("DOMContentLoaded", () => {
       roomType2: Number(room2Input.value) || 0,
       roomType3: Number(room3Input.value) || 0,
       participants: (category === "식비" || category === "숙박") ? participants : [],
+      // I-064(2026-08-31): 정비 항목만 의미가 있다 — 다른 항목은 서버가
+      // 무시하지만, 카테고리를 정비에서 다른 값으로 바꿔 수정 저장할 때
+      // 서버가 P/Q를 비워야 함을 알 수 있도록 항상 함께 보낸다.
+      mileage: category === "정비" ? Number(mileageInput.value) || 0 : "",
+      maintenanceType: category === "정비" ? maintenanceTypeSel.value : "",
     };
 
     submitBtn.disabled = true;

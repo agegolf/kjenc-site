@@ -70,6 +70,24 @@
       <p class="text-xs text-gray-400 mt-1">유류비·정비·통행료 지출인 경우에만 선택해주세요.</p>
     </div>
 
+    <div id="maintenance-field" class="hidden">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="staff-label">주행거리 (km)</label>
+          <input type="number" id="f-mileage" class="staff-input" min="0" placeholder="예: 85000">
+        </div>
+        <div>
+          <label class="staff-label">정비유형</label>
+          <select id="f-maintenance-type" class="staff-select">
+            <option value="">선택해주세요</option>
+            <option value="엔진오일">엔진오일</option>
+            <option value="타이어">타이어</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <div id="room-type-field" class="hidden">
       <label class="staff-label">방타입 (인실 유형별 개수)</label>
       <div class="grid grid-cols-3 gap-2">
