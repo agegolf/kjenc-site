@@ -210,9 +210,15 @@ document.addEventListener("DOMContentLoaded", () => {
     let photoMime = null;
     if (fileInput.files && fileInput.files[0]) {
       const file = fileInput.files[0];
-      photoBase64 = await staffFileToBase64(file);
-      photoName = file.name;
-      photoMime = file.type;
+      // I-071(2026-09-02): 업로드 전 리사이즈+재압축(최대 1600px, JPEG
+      // 품질 0.75) — 이미지가 아니거나(PDF 등) 압축이 실패하면
+      // staffCompressImageToBase64가 자동으로 원본을 그대로 반환한다.
+      const compressed = await staffCompressImageToBase64(file);
+      photoBase64 = compressed.base64;
+      photoMime = compressed.mime;
+      photoName = compressed.compressed
+        ? file.name.replace(/\.[^.]+$/, "") + ".jpg"
+        : file.name;
     }
 
     const participants = Array.from(
