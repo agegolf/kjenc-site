@@ -77,7 +77,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // 계속 #f-site/#f-client의 값을 그대로 쓰므로(draft 저장/복원, 현장 미리보기
   // 조회 등 기존 로직을 전혀 건드리지 않아도 됨) — select는 그 두 input에
   // 값을 채워 넣는 프론트 전용 UI일 뿐이다.
+  // I-085 후속(2026-09-21, Cowork 보고): getSites/getClients 호출이
+  // 실패(네트워크 오류/타임아웃)하면 select가 옵션 없이 빈 채로 남고
+  // 사용자에게 아무 안내도 없어 "현장설정이 안 된다"는 문의로 이어졌다.
+  // 이름/차량번호(I-079/I-051)처럼 하드코딩 폴백을 쓰지 않는 이유는
+  // 현장/거래처는 자주 바뀌어 오래된 값을 잘못 보여줄 위험이 있기
+  // 때문 — 대신 실패 시 최대 2회 자동 재시도 후에도 안 되면 안내
+  // 문구와 "다시 시도" 버튼을 노출한다.
   function setupStandardListSelect(selectEl, hiddenInputEl, apiAction, listKey) {
+    const msgEl = document.getElementById(selectEl.id + "-msg");
     function applySelection() {
       if (selectEl.value === "__custom__") {
         hiddenInputEl.classList.remove("hidden");
@@ -90,22 +98,44 @@ document.addEventListener("DOMContentLoaded", () => {
       hiddenInputEl.dispatchEvent(new Event("input"));
     }
     selectEl.addEventListener("change", () => { applySelection(); saveDraft(); });
-    staffApiCall(apiAction, {}).then((result) => {
-      if (!result.ok || !result[listKey]) return;
-      const options = result[listKey]
-        .map((name) => `<option value="${name}">${name}</option>`)
-        .join("");
-      selectEl.innerHTML = `<option value="">선택해주세요</option>${options}<option value="__custom__">직접입력(신규 현장/거래처)</option>`;
-      // draft 복원이 hiddenInputEl.value를 먼저 채워둔 경우, 그 값이 표준
-      // 목록에 있으면 select도 맞춰준다(없으면 직접입력 상태 유지).
-      if (hiddenInputEl.value && result[listKey].indexOf(hiddenInputEl.value) !== -1) {
-        selectEl.value = hiddenInputEl.value;
-        hiddenInputEl.classList.add("hidden");
-      } else if (hiddenInputEl.value) {
-        selectEl.value = "__custom__";
-        hiddenInputEl.classList.remove("hidden");
-      }
-    });
+
+    function showError() {
+      if (!msgEl) return;
+      msgEl.innerHTML = `목록을 불러오지 못했습니다. <button type="button" class="underline">다시 시도</button>`;
+      msgEl.classList.remove("hidden");
+      msgEl.querySelector("button").addEventListener("click", () => {
+        msgEl.classList.add("hidden");
+        load(0);
+      });
+    }
+
+    function load(attempt) {
+      staffApiCall(apiAction, {}).then((result) => {
+        if (!result.ok || !result[listKey]) {
+          if (attempt < 2) {
+            setTimeout(() => load(attempt + 1), 1000);
+          } else {
+            showError();
+          }
+          return;
+        }
+        if (msgEl) msgEl.classList.add("hidden");
+        const options = result[listKey]
+          .map((name) => `<option value="${name}">${name}</option>`)
+          .join("");
+        selectEl.innerHTML = `<option value="">선택해주세요</option>${options}<option value="__custom__">직접입력(신규 현장/거래처)</option>`;
+        // draft 복원이 hiddenInputEl.value를 먼저 채워둔 경우, 그 값이 표준
+        // 목록에 있으면 select도 맞춰준다(없으면 직접입력 상태 유지).
+        if (hiddenInputEl.value && result[listKey].indexOf(hiddenInputEl.value) !== -1) {
+          selectEl.value = hiddenInputEl.value;
+          hiddenInputEl.classList.add("hidden");
+        } else if (hiddenInputEl.value) {
+          selectEl.value = "__custom__";
+          hiddenInputEl.classList.remove("hidden");
+        }
+      });
+    }
+    load(0);
   }
   setupStandardListSelect(
     document.getElementById("f-site-select"), document.getElementById("f-site"), "getSites", "sites"
@@ -131,8 +161,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // I-079(2026-09-02): STAFF_KNOWN_NAMES 하드코딩 대신 서버 API로
+  // 근무 인원 목록을 가져온다 — 신규 직원이 직원명단 시트에만
+  // 추가돼도(코드 배포 없이) 드롭다운에 바로 반영되도록 하기 위함.
+  // 차량목록(getVehicles)과 동일한 패턴: 처음엔 STAFF_KNOWN_NAMES로
+  // 즉시 렌더링해 지연 없이 폼을 쓸 수 있게 하고, API 응답이 오면
+  // 이미 그려진 이름 select들의 값을 유지한 채 옵션 목록만 갱신한다.
+  let activeEmployeeNames = STAFF_KNOWN_NAMES;
+  staffApiCall("getActiveEmployeeNames", {}).then((result) => {
+    if (result.ok && result.names && result.names.length > 0) {
+      activeEmployeeNames = result.names;
+      document.querySelectorAll(".w-name").forEach((sel) => {
+        const current = sel.value;
+        sel.innerHTML = nameOptions(current);
+        sel.value = current;
+      });
+    }
+  });
+
   function nameOptions(selected) {
-    return STAFF_KNOWN_NAMES.map(
+    return activeEmployeeNames.map(
       (n) => `<option value="${n}" ${n === selected ? "selected" : ""}>${n}</option>`
     ).join("");
   }

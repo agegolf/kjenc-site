@@ -7,6 +7,12 @@ const STAFF_API_URL = "https://script.google.com/macros/s/AKfycbwonU2ihAEhcmxv0A
 // Apps Script Web App은 CORS 프리플라이트(OPTIONS)를 제대로 처리하지 못하므로,
 // fetch 호출 시 Content-Type 헤더를 지정하지 않아 브라우저가 자동으로
 // text/plain으로 보내게 합니다. (Apps Script doPost에서는 JSON.parse로 그대로 읽음)
+// I-080(2026-09-02): 타임아웃이 없어 서버 응답이 오래 걸리면(Apps Script는
+// 흔히 지연됨) "처리 중..." 상태로 무기한 대기해 사용자가 멈춘 건지 알 수
+// 없었다 — AbortController로 30초 타임아웃을 걸어 그 이상 걸리면 명확한
+// 안내 메시지로 전환한다.
+const STAFF_API_TIMEOUT_MS = 30000;
+
 function staffApiCall(action, payload) {
   if (STAFF_API_URL.indexOf("PASTE_") === 0) {
     return Promise.resolve({
@@ -14,12 +20,21 @@ function staffApiCall(action, payload) {
       message: "아직 서버 주소(STAFF_API_URL)가 설정되지 않았습니다. apps-script/README-setup.md를 참고해 설정해주세요.",
     });
   }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), STAFF_API_TIMEOUT_MS);
   return fetch(STAFF_API_URL, {
     method: "POST",
     body: JSON.stringify({ action: action, payload: payload }),
+    signal: controller.signal,
   })
     .then((res) => res.json())
-    .catch(() => ({ ok: false, message: "서버에 연결할 수 없습니다. 인터넷 연결 또는 API 주소를 확인해주세요." }));
+    .catch((err) => {
+      if (err && err.name === "AbortError") {
+        return { ok: false, message: "응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요." };
+      }
+      return { ok: false, message: "서버에 연결할 수 없습니다. 인터넷 연결 또는 API 주소를 확인해주세요." };
+    })
+    .finally(() => clearTimeout(timeoutId));
 }
 
 function staffGetSession() {

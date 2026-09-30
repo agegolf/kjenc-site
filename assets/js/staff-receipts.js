@@ -30,13 +30,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // 있게 한다 — 본인은 기본 체크. 선택된 인원 목록은 저장 시 식대지출(I-036)/숙박예약
   // 시트에 균등분배(1인당 = 금액/인원수)로 함께 기록된다(saveMealGroups_/
   // saveLodgingGroups_ 재사용, handleSaveReceipt_에서 호출).
-  participantsEl.innerHTML = STAFF_KNOWN_NAMES.map(
-    (n) => `
-      <label class="flex items-center gap-1">
-        <input type="checkbox" class="f-participant-check" value="${n}" ${n === session.name ? "checked" : ""}>
-        ${n}
-      </label>`
-  ).join("");
+  // I-079(2026-09-02): STAFF_KNOWN_NAMES 하드코딩 대신 서버 API로
+  // 참가자 목록을 가져온다 — 신규 직원이 직원명단 시트에만 추가돼도
+  // 드롭다운/체크박스에 바로 반영되도록 하기 위함. 처음엔
+  // STAFF_KNOWN_NAMES로 즉시 렌더링해 지연 없이 폼을 쓸 수 있게 하고,
+  // API 응답이 오면 그때까지 체크된 이름들을 그대로 유지한 채 다시
+  // 그린다(worklog.js의 getVehicles/getActiveEmployeeNames와 동일 패턴).
+  function renderParticipants(names) {
+    var checked = new Set(
+      Array.from(participantsEl.querySelectorAll(".f-participant-check:checked")).map((el) => el.value)
+    );
+    participantsEl.innerHTML = names.map(
+      (n) => `
+        <label class="flex items-center gap-1">
+          <input type="checkbox" class="f-participant-check" value="${n}" ${(checked.has(n) || (checked.size === 0 && n === session.name)) ? "checked" : ""}>
+          ${n}
+        </label>`
+    ).join("");
+  }
+  renderParticipants(STAFF_KNOWN_NAMES);
+  staffApiCall("getActiveEmployeeNames", {}).then((result) => {
+    if (result.ok && result.names && result.names.length > 0) {
+      renderParticipants(result.names);
+    }
+  });
 
   // I-012(2026-08-05): 항목분류가 유류비/정비일 때만 차량번호 선택을 보여준다.
   // 차량목록은 프론트에 하드코딩하지 않고 서버(차량목록 시트)에서 가져온다.
@@ -65,11 +82,33 @@ document.addEventListener("DOMContentLoaded", () => {
       siteInputEl.value = siteSelectEl.value;
     }
   });
-  staffApiCall("getSites", {}).then((result) => {
-    if (!result.ok || !result.sites) return;
-    const options = result.sites.map((name) => `<option value="${name}">${name}</option>`).join("");
-    siteSelectEl.innerHTML = `<option value="">선택해주세요</option>${options}<option value="__custom__">직접입력(신규 현장)</option>`;
-  });
+  // I-085 후속(2026-09-21, Cowork 보고): getSites 호출이 실패(네트워크
+  // 오류/타임아웃)하면 select가 옵션 없이 완전히 빈 채로 남아 "현장설정이
+  // 안 된다"는 문의로 이어졌다. 최대 2회 자동 재시도 후에도 실패하면
+  // 안내 문구+재시도 버튼을 노출한다(worklog.js의 setupStandardListSelect와
+  // 동일한 패턴).
+  const siteMsgEl = document.getElementById("f-site-select-msg");
+  function loadSites(attempt) {
+    staffApiCall("getSites", {}).then((result) => {
+      if (!result.ok || !result.sites) {
+        if (attempt < 2) {
+          setTimeout(() => loadSites(attempt + 1), 1000);
+        } else if (siteMsgEl) {
+          siteMsgEl.innerHTML = `목록을 불러오지 못했습니다. <button type="button" class="underline">다시 시도</button>`;
+          siteMsgEl.classList.remove("hidden");
+          siteMsgEl.querySelector("button").addEventListener("click", () => {
+            siteMsgEl.classList.add("hidden");
+            loadSites(0);
+          });
+        }
+        return;
+      }
+      if (siteMsgEl) siteMsgEl.classList.add("hidden");
+      const options = result.sites.map((name) => `<option value="${name}">${name}</option>`).join("");
+      siteSelectEl.innerHTML = `<option value="">선택해주세요</option>${options}<option value="__custom__">직접입력(신규 현장)</option>`;
+    });
+  }
+  loadSites(0);
 
   // I-045(2026-08-17): 폼을 신규 등록/수정 겸용으로 쓴다. editingTimestamp가
   // null이면 신규 등록(saveReceipt), 값이 있으면 그 영수증의 수정(updateReceipt) —
