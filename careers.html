@@ -11,13 +11,13 @@
 
 <!-- Header -->
 <header class="header-sticky bg-white border-b border-gray-200">
-  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-    <a href="index.html" class="flex items-center gap-2">
-      <img src="assets/img/logo-mark.svg" alt="케이제이ENC 로고" class="w-10 h-10">
-      <span class="text-lg font-bold" style="color:var(--kjenc-navy-800)">케이제이ENC</span>
+  <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-y-2">
+    <a href="index.html" class="flex items-center gap-2 flex-shrink-0">
+      <img src="assets/img/logo-mark.svg" alt="케이제이ENC 로고" class="w-10 h-10 flex-shrink-0">
+      <span class="text-lg font-bold whitespace-nowrap" style="color:var(--kjenc-navy-800)">케이제이ENC</span>
     </a>
 
-    <nav class="hidden md:flex items-center gap-6 text-sm">
+    <nav class="hidden md:flex items-center gap-3 lg:gap-6 text-sm flex-wrap">
       <a href="index.html" class="nav-link" data-page="home">홈</a>
       <a href="about.html" class="nav-link" data-page="about">회사소개</a>
       <a href="services.html" class="nav-link" data-page="services">사업영역</a>
@@ -29,7 +29,7 @@
       <a href="staff/login.html" class="nav-link">직원 로그인</a>
     </nav>
 
-    <div class="hidden md:flex items-center gap-4">
+    <div class="hidden md:flex items-center gap-2 lg:gap-4 flex-shrink-0">
       <a href="https://docs.google.com/spreadsheets/d/1Axa9PTqSl4DBH4uXhw_3rlmACLfMC0VibL7umPCECDA/edit" target="_blank" rel="noopener" title="업무일지 시트 (관리자)" class="admin-sheet-link hidden p-1" style="color:var(--kjenc-navy-700)">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
       </a>
@@ -162,7 +162,7 @@
     try {
       var raw = localStorage.getItem("kjenc_staff_session");
       var session = raw ? JSON.parse(raw) : null;
-      if (session && session.isAdmin) {
+      if (session && session.isAdmin && session.name === "김용호") {
         document.querySelectorAll(".admin-sheet-link").forEach(function (el) {
           el.classList.remove("hidden");
         });
